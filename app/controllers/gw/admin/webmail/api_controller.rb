@@ -35,16 +35,9 @@ class Gw::Admin::Webmail::ApiController < ApplicationController
       login_temporarily(params[:account], params[:password], nil) do
         # フィルタ適用
         last_uid, recent, error = Gw::WebmailFilter.apply_recents
-        # 未読メール格納オブジェクト
-        @mails = []
-        # 全メールボックスを取得
-        Gw::WebmailMailbox.load_mailboxes(:all).each do |box|
-          # 送信済みトレイ、下書き、ゴミ箱、スター付き、アーカイブメールボックスは未読メールの検索対象外とする
-          next if box.name =~ /^(Sent|Drafts|Trash|Star)(\.|$)/
-          @mails << Gw::WebmailMail.find(:all, :select => box.name, :conditions => "UNSEEN")
-        end
 
-        @mails.flatten!
+        # 未読メール取得
+        @mails = Gw::WebmailMailbox.unseen_mails
         if @mails.present?
           @remind[:total_count] = @mails.size
           @mails.sort_by! { |mail| mail.date } if params[:sort_key] == "datetime"
@@ -67,6 +60,8 @@ class Gw::Admin::Webmail::ApiController < ApplicationController
       end
     end
 
+    response.headers['Access-Control-Allow-Origin'] =
+                        Enisys::Config.application['gw.root_url']
     render :json => @remind, :layout => false
   end
 

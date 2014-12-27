@@ -814,8 +814,9 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     if changed_num > 0
       reset_mailboxes([:all])
       reset_starred_mails(changed_mailbox_uids) if @item.starred?
-      
-      flash[:notice] = 'メールを削除しました。' unless @new_window
+
+      flash[:notice] = "メールをごみ箱に移動しました。"
+      flash[:notice] = 'メールを削除しました。' unless @new_window if params[:real]
       respond_to do |format|
         format.html do
           action = @new_window ? :close : :index
@@ -965,7 +966,8 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
 #      num += 1 if item.destroy
 #    end
     
-    flash[:notice] = "#{changed_num}件のメールを削除しました。".force_encoding('utf-8')
+    flash[:notice] = "#{changed_num}件のメールをごみ箱に移動しました。".force_encoding('utf-8')
+    flash[:notice] = "#{changed_num}件のメールを削除しました。".force_encoding('utf-8') if params[:real]
     redirect_to url_for(:action => :index, :page => 1) #params[:page]
   end
   
@@ -1289,7 +1291,7 @@ protected
     if ref.has_attachments?
       ref.attachments.each do |f|
         file = Gw::WebmailMailAttachment.new({
-          :tmp_id => item.tmp_id,
+          :tmp_id => item.tmp_id.to_s,
         })
         tmpfile = Sys::Lib::File::Tempfile.new({
           :data     => f.body,

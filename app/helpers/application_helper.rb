@@ -99,4 +99,31 @@ module ApplicationHelper
   def switch_account?
     (Core.user.account != Core.current_user.account)
   end
+
+  def show_mail_count
+    case
+    when Core.user.email.blank?
+      cnt = 0
+    when switch_account?
+      Core.imap.logout
+      Core.imap.disconnect
+      Core.imap = nil
+      u = Core.current_user
+      Core.current_user = Core.user
+      cnt = Gw::WebmailMailbox.unseen_mails.size
+      Core.imap.logout
+      Core.imap.disconnect
+      Core.imap = nil
+      Core.current_user = u
+    else
+      cnt = Gw::WebmailMailbox.unseen_mails.size
+    end
+<<HTML
+<script type="text/javascript">
+//<![CDATA[
+  rumi.unread.showMailCount(#{cnt});
+//]]>
+</script>
+HTML
+  end
 end

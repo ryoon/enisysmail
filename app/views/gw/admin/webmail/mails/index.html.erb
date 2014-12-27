@@ -164,10 +164,14 @@ function showPopupMenu(btn, id) {
     </div>
   </div>
   <div class="simplePagination">
-    <%= link_to "≪前", url_for(@s_params.merge(:page => @items.previous_page)) if @items.previous_page
-    %><span><b><%= @items.current_page %></b>/<b><%= @items.total_pages %></b></span
-    ><%= link_to "次≫", url_for(@s_params.merge(:page => @items.next_page)) if @items.next_page
-    %><%#= paginate @items, :page_links => false, :previous_label => "≪前", :next_label => "次≫" %>
+    <% if @items.total_pages > 0 %>
+      <%= link_to "≪前", url_for(@s_params.merge(:page => @items.previous_page)) if @items.previous_page
+      %><span><b><%= @items.current_page %></b>/<b><%= @items.total_pages %></b></span
+      ><%= link_to "次≫", url_for(@s_params.merge(:page => @items.next_page)) if @items.next_page
+      %><%#= paginate @items, :page_links => false, :previous_label => "≪前", :next_label => "次≫" %>
+    <% else %>
+      <span> － </span>
+    <% end %>
   </div>
 </div>
 
@@ -208,10 +212,10 @@ function showPopupMenu(btn, id) {
 //<![CDATA[
   new rumi.polling("<%= raw escape_javascript mail_check_gw_webmail_mails_path(@mailbox.name) %>", <%= @polling_interval %>);
   new rumi.dragdrop("<%=raw escape_javascript move_gw_webmail_mails_path(@mailbox.name) %>",
-                      "<%=raw escape_javascript move_folder_gw_webmail_mails_path(@mailbox.name) %>");
+                    "<%=raw escape_javascript move_folder_gw_webmail_mails_path(@mailbox.name) %>");
   var r_preview = new rumi.preview(150, "<%= @opt_mail_id %>");
   var r_mark = new rumi.mark("<%=raw escape_javascript label_gw_webmail_mails_path(@mailbox.name) %>",
-                               "<%=raw escape_javascript star_gw_webmail_mails_path(@mailbox.name) %>");
+                             "<%=raw escape_javascript star_gw_webmail_mails_path(@mailbox.name) %>");
 
   (function($) {
     $(function() {

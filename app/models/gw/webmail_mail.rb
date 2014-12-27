@@ -277,7 +277,6 @@ class Gw::WebmailMail
     
     uids = [uids] if uids.class == Fixnum
     use_cache = options[:use_cache] || true
-#    use_cache = false
     
     imap.examine(mailbox)
     

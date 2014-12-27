@@ -248,13 +248,7 @@ rumi.preview.prototype.open = function() {
     jQuery('div.mailbox').html(e.tree);
     var noread = e.noread;
     if (noread != null) {
-      if (noread == '0') {
-        noread = '';
-      } else {
-        noread = e.noread;
-      }
-      jQuery("img[alt='メール'][src$='ic_mailer.gif']")
-	     .parent().prev("span.noRead").html(noread);
+     rumi.unread.showMailCount(Number(noread));
     }
   }).error(function(e) {
     alert("メールの取得に失敗しました。");
@@ -1104,4 +1098,13 @@ rumi.ui.SelectGroup.prototype.setDisabled = function(disabled) {
   rumi.setDisabled(this.getChildList(), disabled);
   rumi.setDisabled(jQuery(this.add_btn_id), disabled);
   rumi.setDisabled(jQuery(this.remove_btn_id), disabled);
+};
+
+// rumi.unread namespace
+rumi.unread = {}
+
+// メールの未読件数表示
+rumi.unread.showMailCount = function(count) {
+  if (count != 0) jQuery('#notificationMailCount').html(count);
+  else jQuery('#notificationMailCount').html("");
 };

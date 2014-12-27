@@ -5,7 +5,7 @@
 </h2>
 <%= form_for(:item, :url => @forward_form_url, :method => :post,
           :html => {:id => "item_form", :multipart => true, :target => @target_name, :style => "display: inline"}) do |f| %>
-        <%= hidden_field_tag :title, "転送（メールから）:#{@item.subject}" %>
+        <%= hidden_field_tag :title, "転送（メールから）: #{@item.subject}" %>
         <%= hidden_field_tag :body, "#{@mail_text_body}" %>
         <% if @item.has_attachments? && @item.attachments.size > 0 %>
           <%= hidden_field_tag :tmp, @tmp %>

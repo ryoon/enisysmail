@@ -11,8 +11,19 @@ class Gw::Admin::Webmail::MailAttachmentsController < ApplicationController#Gw::
     
     cond = { :tmp_id => params[:tmp_id] }
     files = Gw::WebmailMailAttachment.find(:all, :conditions => cond).collect do |f|
+      cnt = 0
+      omit_base = File.basename(f.name, '.*').each_char
+        .each_with_object('') do |chr, str|
+        cnt += (chr[/^[ -~｡-ﾟ]$/] ? 1 : 2)
+        if cnt > 50
+          str << "…"
+          break str
+        end
+        str << chr
+      end
       { :id   => f.id,
         :name => f.name,
+        :omit_name => omit_base + File.extname(f.name),
         :size => f.size,
         :eng_unit => f.eng_unit,
         :image_is => f.image_is

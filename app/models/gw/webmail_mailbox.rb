@@ -219,12 +219,15 @@ class Gw::WebmailMailbox < ActiveRecord::Base
         quota = {}
         quota[:total_bytes] = max_quota_bytes
         quota[:total]       = Util::Unit.eng_unit(max_quota_bytes).gsub(/\.[0-9]+/, '')
+        #quota[:total]       = eng_unit_only_mb(max_quota_bytes)
         quota[:used_bytes]  = quota_bytes
         quota[:used]        = Util::Unit.eng_unit(quota_bytes).gsub(/\.[0-9]+/, '')
+        #quota[:used]        = eng_unit_only_mb(quota_bytes)
         quota[:usage_rate]  = sprintf('%.1f', quota_bytes.to_f / max_quota_bytes.to_f * 100).to_f
         if quota_bytes > warn_quota_bytes
           if (remain_quota_bytes = max_quota_bytes - quota_bytes) > 0
-            usable = Util::Unit.eng_unit(max_quota_bytes - quota_bytes).gsub(/\.[0-9]+/, '') 
+            usable = Util::Unit.eng_unit(max_quota_bytes - quota_bytes).gsub(/\.[0-9]+/, '')
+            #usable = eng_unit_only_mb(max_quota_bytes - quota_bytes)
             quota[:alert_message] = "メールボックスの容量が、残り #{usable} です。"
           else
             quota[:alert_message] = "メールボックスが規定の容量を超えています。メールを削除して下さい。"
@@ -361,6 +364,30 @@ class Gw::WebmailMailbox < ActiveRecord::Base
   def validate_title
     if title =~ /[\.\/\#\\]/
       errors.add :title, "に半角記号（ . / # \\ ）は使用できません。"
+    end
+  end
+
+  class << self
+    # === 未読メール一覧取得
+    #
+    # ==== 引数
+    #  * なし
+    # ==== 戻り値
+    #  未読メール一覧
+    def unseen_mails
+      mails = []
+      self.load_mailboxes(:all).each do |box|
+        # 送信済み、下書き、ゴミ箱、スター付きは未読メールの検索対象外とする
+        next if box.name =~ /^(Sent|Drafts|Trash|Star)(\.|$)/
+        mails << Gw::WebmailMail.find(:all,
+                                      select: box.name, conditions: "UNSEEN")
+      end
+      return mails.flatten
+    end
+
+    private
+    def eng_unit_only_mb(size)
+      "#{size.to_i / 1024**2}MB"
     end
   end
 end

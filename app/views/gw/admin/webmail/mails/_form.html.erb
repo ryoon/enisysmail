@@ -111,9 +111,10 @@ function showUploadedFiles(request) {
     var item = items[i];
     var id   = getNodeValue(item, 'id');
     var name = getNodeValue(item, 'name');
+    var omit_name = getNodeValue(item, 'omit_name');
     var size = getNodeValue(item, 'eng_unit');
     var image_is = getNodeValue(item, 'image_is');
-    addUploadedFile(id, name, size, image_is);
+    addUploadedFile(id, name, omit_name, size, image_is);
   }
 }
 function getNodeValue(node, name) {
@@ -123,7 +124,7 @@ function getNodeValue(node, name) {
   }
   return "";
 }
-function addUploadedFile(id, name, size, image_is) {
+function addUploadedFile(id, name, omit_name, size, image_is) {
   var field = $('uploadedFiles');
   if (field.visible() == false) { field.show(); }
   var sepa = ""; //(field.innerHTML == "") ? '' : '<span class="uploadedFileSeparator"></span>';
@@ -137,7 +138,7 @@ function addUploadedFile(id, name, size, image_is) {
   } else {
     opt = 'onclick="return downloadUploadedFile(this.href);"';
   }
-  html += '<a href="' + uri +'" class="uploadedFileName '+ icon + '" ' + opt + ' >' + name.escapeHTML() + "(" + size + ")" + '</a>';
+  html += '<a href="' + uri +'" class="uploadedFileName '+ icon + '" ' + opt + ' >' + omit_name.escapeHTML() + "(" + size + ")" + '</a>';
   html += '<a href="#" class="deleteUploadedFile" onclick="return deleteUploadedFile(\'' + id + '\')" title="削除">x</a>';
   html += '<input type="hidden" name="item[tmp_attachment_ids][]" value="' + id + '" />'
   html += '</span> ';

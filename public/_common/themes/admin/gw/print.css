@@ -15,6 +15,7 @@
 #mail_list, #mail_list_header,
 #mail_body span.remarks > a,
 #mail_body table.attachmentDownloader td.actions,
+td.subject.autoWrap > a,
 div.quotaAlert, div.quota {
   display: none;
 }

@@ -134,7 +134,11 @@ core_user = Core.user
                 <% book.groups.each do |g| %>
                   <% next unless g.parent_id.nil? %>
                   <li class="group" id="publicGroup<%= book.id %>_<%= g.id %>">
-                    <% if parent_group_ids.include?(g.id) || !(g.addresses.map(&:id) & readable_public_address_ids).empty? %>
+                    <%# if parent_group_ids.include?(g.id) || !(g.addresses.map(&:id) & readable_public_address_ids).empty? %>
+                    <% if parent_group_ids.include?(g.id) ||
+                        g.children.present? ||
+                        !(g.addresses.map(&:id) &
+                        readable_public_address_ids).empty? %>
                       <%= link_to '+', '#', id: "publicToggleItems#{book.id}_#{g.id}", class: "toggleItems toggleItemsClose",
                           onclick: "AddressSelector.instance.loadItems('public', '#{g.id}', {}, '#{book.id}');return false" %>
                     <% else %>
