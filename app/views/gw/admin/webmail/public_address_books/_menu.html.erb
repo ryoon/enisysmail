@@ -1,0 +1,8 @@
+<% if Core.user.public_address_book_admin_user? %>
+
+  <% link_title = t("rumi.public_address_book.action.new.name") %>
+  <div class="menu">
+    <%= link_to(link_title, new_gw_webmail_public_address_book_path, class: "new-public-address-book", title: link_title) if Core.user.public_address_book_admin_user? %>
+  </div>
+
+<% end %>

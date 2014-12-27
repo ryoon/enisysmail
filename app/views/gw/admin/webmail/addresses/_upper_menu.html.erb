@@ -1,0 +1,9 @@
+<div class="actionMenu">
+  <%= link_to t("rumi.operation.return_private_address_book.name"),
+    gw_webmail_address_groups_path, style: "margin-bottom: 10px;" %>
+
+  <%= link_to t("rumi.private_address_book.action.csv.import.name"), 
+    import_gw_webmail_addresses_path, style: "margin-bottom: 10px;" %>
+  <%= link_to t("rumi.private_address_book.action.csv.export.name"), 
+    export_gw_webmail_addresses_path %>
+</div>

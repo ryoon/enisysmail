@@ -1,0 +1,6 @@
+<% if address.affiliated_groups.count.zero? %>
+  <%= t("rumi.public_affiliated_address_group.none.name") %>
+<% else %>
+  <% affiliated_groups = build_breadcrumbs_list_address_groups(address.public_address_book, address.groups) %>
+  <%= affiliated_groups.join("<br />").html_safe %>
+<% end %>

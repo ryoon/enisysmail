@@ -1,0 +1,25 @@
+<table class="index">
+  <tr>
+    <th style="width: 30%;"><%= Gw::WebmailPublicAddress.human_attribute_name(:name) %></th>
+    <th><%= Gw::WebmailPublicAddress.human_attribute_name(:email) %></th>
+    <% if show_affiliated_groups %>
+      <th><%= t("rumi.attributes.rumi_address_csv.import.affliated_group_names") %></th>
+    <% end %>
+  </tr>
+  <% addresses.each do |address| %>
+  <tr <%= cycle '', 'class="cycle"' %>>
+    <td><%= address.name %></td>
+    <td>
+      <%= address.email %>
+      <%= t("rumi.public_address_book.action.csv.import.message.email_exists") if address.provisional_exist_address.present? %>
+    </td>
+    <% if show_affiliated_groups %>
+      <td>
+        <% address.provisional_affiliated_groups.each do |affiliated_group| %>
+          <%= join_directory_notation(affiliated_group.map(&:name)) %><br />
+        <% end %>
+      </td>
+    <% end %>
+  </tr>
+  <% end %>
+</table>

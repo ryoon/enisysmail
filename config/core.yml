@@ -1,0 +1,15 @@
+common: &common
+  title  : Mail
+  uri    : http://rumimail.tpj.co.jp/
+  proxy  :
+  map_key:
+  mail_domain: rumimail.tpj.co.jp
+
+development:
+  <<: *common
+
+test:
+  <<: *common
+
+production:
+  <<: *common

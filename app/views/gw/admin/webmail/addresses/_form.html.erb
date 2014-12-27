@@ -1,0 +1,65 @@
+<%
+group_ids = @item.in_groups ? @item.in_groups.split(",") : []
+%>
+<script type="text/javascript">
+//<![CDATA[
+function checkGroup(check_box) {
+  var groups = $('item_in_groups').value;
+  if (check_box.checked) {
+    if (groups != "") groups += ",";
+    groups += check_box.value;
+  } else {
+    var tmp = groups.split(",");
+    var match = -1;
+    for (var i = 0;i < tmp.length;i++) {
+      if (tmp[i] == check_box.value) {
+        match = i;
+        break;
+      }
+    }
+    if (match >= 0) tmp.splice(match, 1);
+    groups = tmp.join(",");
+  }
+  $('item_in_groups').value = groups;
+}
+//]]>
+</script>
+
+<table style="width: 100%;">
+  <tr>
+    <td style="width: 49%; vertical-align: top;">
+      <table class="show addressInfo">
+
+        <% Sys::AddressSetting.without_state.extract_used_address_item.each do |address_item| %>
+          <tr>
+            <% key_name = address_item.key_name %>
+            <% item_name = key_name.to_sym %>
+            <th>
+              <%= Gw::WebmailAddress.human_attribute_name(item_name) %>
+              <%= required if Sys::AddressSetting.presence_items?(key_name) %>
+            </th>
+
+            <% case true %>
+            <% when Sys::AddressSetting.text_area_items?(key_name) %>
+              <td><%= f.text_area item_name, style: "height: 2.4em;" %></td>
+            <% when Sys::AddressSetting.affiliated_group_items?(key_name) %>
+              <td>
+                <div id="addressGroups">
+                  <% Gw::WebmailAddressGroup.user_sorted_groups.each do |g| %>
+                    <div><%= '　　' * (g.level_no - 1) %>
+                    <%= check_box_tag "group_#{g.id}", g.id, group_ids.index(g.id.to_s), :onclick => "checkGroup(this);return true;", :style => 'width:auto;' %>
+                    <%= label_tag "group_#{g.id}", g.name %></div>
+                  <% end %>
+                </div>
+                <%= f.hidden_field :in_groups %></td>
+
+            <% else %>
+              <td><%= f.text_field item_name %></td>
+            <% end %>
+          </tr>
+        <% end %>
+
+      </table>
+    </td>
+  </tr>
+</table>

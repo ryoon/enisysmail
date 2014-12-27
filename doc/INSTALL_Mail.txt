@@ -1,0 +1,260 @@
+## Enisys Mail 1.0.0 インストールマニュアル                 2014.05.30
+
+**********************************************************************
+ 1 想定環境
+**********************************************************************
+
+[システム]
+OS         : CentOS 6.5
+Webサーバ  : Apache 2.2
+DBシステム : MySQL 5.1
+Ruby       : Ruby 2.1.2
+Rails      : Rails 3.0.20
+Mailサーバ : SMTP, IMAP4
+ホスト名   : enisysmail.co.jp
+
+※IPアドレス、ホスト名は一例です。ご利用の環境に応じて変更してください。
+
+**********************************************************************
+ 2 CentOS のインストール
+**********************************************************************
+
+CentOSをインストールします。
+
+インストール完了後、ご利用の環境に合わせて適切なセキュリティ設定を行ってください。
+CentOSに関するセキュリティ設定については、本マニュアルの範囲外となります。
+
+[設定]
+接続を許可します。
+
+  # vi /etc/sysconfig/iptables
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  #接続を許可するportを設定します。
+  -A INPUT -m state --state NEW -m tcp -p tcp --dport 25 -j ACCEPT
+  -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+  -A INPUT -m state --state NEW -m tcp -p tcp --dport 143 -j ACCEPT
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  iptablesを再起動します
+  # service iptables restart
+
+hostsを設定します。
+
+  # vi /etc/hosts
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # 後ろにホスト名を追記する。
+  127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 enisysmail.co.jp
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+SELinuxを無効にします。
+
+  # vi /etc/sysconfig/selinux
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SELINUX=disabled
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+kernel panic対策として起動時のオプションを変更します。
+
+  # vi /boot/grub/grub.conf
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # 後ろに「selinux=0」を追記する。
+        kernel /vmlinuz-2.6.32-220.11.2.el6.i686 ro ... rd_NO_DM selinux=0
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+再起動します。
+
+  # shutdown -r now
+
+**********************************************************************
+ 3 事前準備
+**********************************************************************
+
+rootユーザに変更します。
+
+  # su -
+
+必要なパッケージをインストールします。
+
+  # yum install -y wget make gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel
+  # yum install -y openssl-devel make bzip2 autoconf automake libtool bison iconv-devel libjpeg-devel libpng-devel
+  # yum install -y ImageMagick ImageMagick-devel curl-devel libevent libevent-devel mysql-server mysql-devel httpd httpd-devel
+  # yum install -y libxslt libxslt-devel libxml2-devel librsvg2-devel ghostscript-devel shared-mime-info
+
+Enisys Mailソースコードを設置します。
+
+  # mkdir /var/share
+  # tar xvzf enisysmail-1.0.0.tar.gz -C /var/share
+  # chown -R apache:apache /var/share/enisysmail
+
+**********************************************************************
+ 4 Apache の設定
+**********************************************************************
+
+設定ファイルを編集します。
+
+  # vi /etc/httpd/conf/httpd.conf
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  ServerName enisysmail.co.jp
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+設定ファイルにエラーがないことを確認し、Apacheを起動します。
+
+  # /sbin/service httpd configtest
+  # /sbin/service httpd start
+
+自動起動に設定します。
+
+  # /sbin/chkconfig httpd on
+
+**********************************************************************
+ 5 MySQL の設定
+**********************************************************************
+
+文字エンコーディングの標準を UTF-8 に設定します。
+
+  # vi /etc/my.cnf
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  [mysqld]
+  default-character-set=utf8    #追加
+  default-table-type=innodb
+  
+  [mysql]                       #追加（末尾に追加）
+  default-character-set=utf8    #追加
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+MySQLを起動します。
+
+  # /usr/bin/mysql_install_db --user=mysql
+  # /sbin/service mysqld start
+
+自動起動に設定します。
+
+  # /sbin/chkconfig mysqld on
+  
+rootユーザのパスワードを設定します。
+  # /usr/bin/mysqladmin -u root password "pass"
+
+enisysユーザを作成します。
+  # /usr/bin/mysql -u root -ppass \
+  #   -e "grant all on *.* to enisys@localhost IDENTIFIED BY 'pass'"
+
+**********************************************************************
+ 6 Ruby on Rails のインストール
+**********************************************************************
+
+======================================================================
+ 6.1 Ruby のインストール
+======================================================================
+
+RVM(Ruby Version Manager)をインストールします。
+
+  # bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer )
+  # [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" 
+
+Rubyをインストールします。
+（ RVMのインストール後、一旦ログアウトして、再度ログインしてから行います。 )
+  # rvm get head
+  # rvm get stable
+  # rvm install 2.1.2
+
+======================================================================
+ 6.2 Phusion Passenger のインストール
+======================================================================
+
+Phusion Passengerをインストールします。
+
+  # gem install passenger -v 4.0.42
+  # passenger-install-apache2-module
+  
+  ( 画面の内容を確認して Enterキーを押してください。 )
+
+======================================================================
+ 6.3 gemライブラリ のインストール
+======================================================================
+
+必要ライブラリをインストールします。
+
+  # cd /var/share/enisysmail
+  # bundle install
+
+ネットワーク経由でファイルのダウンロードとインストールが行われます。
+正しく完了すれば次のようなメッセージが表示されます。
+  =>Your bundle is complete! Use `bundle show [gemname]` to see where a bundled gem is installed.
+
+**********************************************************************
+  7 Enisys Mailのインストール
+**********************************************************************
+
+Enisys Mailを配置したディレクトリに移動します。
+
+  # cd /var/share/enisysmail
+
+======================================================================
+ 7.1 設定ファイル
+======================================================================
+
+環境に応じて設定ファイルを編集します。
+
+Enisys Mail 基本設定
+
+  # vi config/core.yml
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  title  : Enisys Mail
+  uri    : http://enisysmail.co.jp/
+  proxy  : ※プロキシ
+  map_key:
+  mail_domain: enisysmail.co.jp
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  
+  ※プロキシ
+  プロキシサーバが導入されている場合は
+  http://example:8080/ の様に記述してください。
+
+DB接続情報
+
+  # vi config/database.yml
+
+SMTP, IMAPサーバ設定
+
+  # vi config/environments/development.rb
+  ※ production環境の場合は # vi config/environments/production.rb
+
+VirtualHost設定
+
+  # vi config/virtual-hosts/enisysmail.conf
+
+======================================================================
+ 7.2 データベースの作成
+======================================================================
+
+※作業の途中でmysqlに設定したパスワードを聞かれますのでご用意ください。
+
+データベース、テーブルを作成します。
+
+  # cd /var/share/enisysmail/
+  # rake db:create RAILS_ENV=development
+  # rake db:migrate RAILS_ENV=development
+ 
+※Railsの実行環境がproductionの場合、RAILS_ENVの指定は下記のようにしてください。
+  RAILS_ENV=production
+
+初期（サンプル）データを登録します。
+
+  # mysql -u root -ppass enisysmail < ./db/demo_mail_init.sql
+
+======================================================================
+ 7.3 VirtualHost の反映
+======================================================================
+
+Apacheに設定を追加します。
+
+  # cp /var/share/enisysmail/config/samples/enisysmail.conf /etc/httpd/conf.d/
+
+Apache を再起動します。
+  # /sbin/service httpd configtest
+  # /sbin/service httpd restart
+
+
+以上でEnisys Mailのインストールが完了しました。
+
+**********************************************************************

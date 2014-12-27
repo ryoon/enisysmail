@@ -1,0 +1,32 @@
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailMenu">
+      <div id="webmailMenuContainer">
+        <%= render partial: "csv_menu" %>
+      </div>
+    </td>
+    <td id="webmailContent">
+      <div id="addressContent">
+
+        <%= form_for @csv_form, url: { action: :exec_export }, html: { multipart: true } do |f| %>
+        <%= f.error_messages %>
+
+          <%= hidden_field_tag :id, @book.id if @book.present? %>
+
+          <table class="show">
+            <%= f.hidden_field :form_mode %>
+            <tr>
+              <th><%= RumiHelper::CsvForm.human_attribute_name(:format_type) %></th>
+              <td><%= f.radio_buttons(:format_type, RumiHelper::CsvForm.format_types, style: "width:auto;") %></td>
+            </tr>
+          </table>
+
+          <div class="submitters">
+            <%= f.submit t("helpers.submit.csv_export"), name: :csv_export %>
+          </div>
+        <% end %>
+
+      </div>
+    </td>
+  </tr>
+</table>

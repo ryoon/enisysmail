@@ -1,0 +1,23 @@
+<table class="index" style="width:600px;">
+  <tr>
+    <th style="width:200px; text-align:left;">
+      <%= Sys::PublicAddressBookRole.human_attribute_name(:admin_groups_json) %>
+    </th>
+    <th style="width:200px; text-align:left;">
+      <%= Sys::PublicAddressBookRole.human_attribute_name(:admin_users_json) %>
+    </th>
+  </tr>
+
+  <tr <%= cycle '', 'class="cycle"' %>>
+    <td style="text-align: left;">
+      <% @role.admin_groups.each do |admin_group| %>
+        <%= admin_group.group.name %><br />
+      <% end %>
+    </td>
+    <td style="text-align: left;">
+      <% @role.admin_users.each do |admin_user| %>
+        <%= admin_user.user.name %><br />
+      <% end %>
+    </td>
+  </tr>
+</table>

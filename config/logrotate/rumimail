@@ -1,0 +1,19 @@
+/var/share/rumimail/log/production.log
+/var/share/rumimail/log/passenger.3000.log
+{
+  daily
+  dateext
+  missingok
+  rotate 3650
+  compress
+  delaycompress
+  sharedscripts
+  noolddir
+  postrotate
+    touch /var/share/rumimail/tmp/restart.txt
+    wget --spider http://localhost:3000
+  endscript
+  lastaction
+    mv /var/share/rumimail/log/*.gz /var/log/enisyslog/mail1/ > /dev/null 2>&1
+  endscript
+}

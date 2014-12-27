@@ -1,0 +1,24 @@
+<% public_address_books = Gw::WebmailPublicAddressBook.extract_editable(Core.user) %>
+
+<div class="rightMenu">
+  <% radio_click_handler = "addressBookSelector.setBookCategory(this.value);" %>
+  <% select_box_click_handler = "addressBookSelector.setBookId(this.value);" %>
+
+  <%= radio_button_tag("dummy_item[book_category]", "private_address_book", {}, { onchange: radio_click_handler }) %>
+  <label for="dummy_item_book_category_private_address_book">
+    <%= image_tag("/_common/themes/admin/gw/images/other/adress_m.gif") %>
+    <%= t("rumi.operation.add_private_address.name") %>
+  </label>
+
+  <%= radio_button_tag("dummy_item[book_category]", "public_address_book", {}, {
+    onchange: radio_click_handler, disabled: public_address_books.blank? }) %>
+  <label for="dummy_item_book_category_public_address_book">
+    <%= image_tag("/_common/themes/admin/gw/images/other/adress_m.gif") %>
+    <%= t("rumi.operation.add_public_address.name") %>
+  </label>
+
+  <%= select_tag("dummy_item[book_id]", options_for_select(
+    build_select_public_address_books(public_address_books)),
+    include_blank: t("rumi.operation.add_public_address.prompt"),
+    class: "public-address-book-selector", onchange: select_box_click_handler) %>
+</div>

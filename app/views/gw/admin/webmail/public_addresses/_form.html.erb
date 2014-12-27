@@ -1,0 +1,68 @@
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailContent">
+      <div id="addressContent">
+
+<%= form_for @address do |f| %>
+  <div class="actionMenu">
+    <%= link_to :index, gw_webmail_public_address_groups_path(build_public_address_path_queries) %>
+    <%= f.submit class: "submit-action-menu" %>
+  </div>
+
+  <%= f.error_messages %>
+
+  <%= hidden_field_tag :book_id, @book.id if @address.new_record? %>
+
+  <table style="width: 100%;">
+    <tr>
+      <td style="width: 49%; vertical-align: top;">
+        <table class="show addressInfo">
+          <% Sys::AddressSetting.extract_used_address_item.each do |address_item| %>
+            <tr>
+              <% key_name = address_item.key_name %>
+              <% item_name = key_name.to_sym %>
+              <th>
+                <%= Gw::WebmailPublicAddress.human_attribute_name(item_name) %>
+                <%= required if Sys::AddressSetting.presence_items?(key_name) %>
+              </th>
+
+              <% case true %>
+              <% when Sys::AddressSetting.text_area_items?(key_name) %>
+                <td><%= f.text_area item_name, style: "height: 2.4em;" %></td>
+              <% when Sys::AddressSetting.affiliated_group_items?(key_name) %>
+                <td>
+                  <div id="addressGroups">
+                    <% @sorted_address_groups.each do |group| %>
+                      <% affiliated_group = @address.find_or_build_affiliated_group(group) %>
+                      <%= f.fields_for(:affiliated_groups, affiliated_group, child_index: group.id) do |child_f| %>
+                        <div>
+                          <%= group.indented_space %>
+                          <%= child_f.check_box :_destroy, { checked: affiliated_group.checked?, style: "width:auto;" }, 0, 1 %>
+                          <%= child_f.label :_destroy, group.name %>
+
+                          <%= child_f.hidden_field :group_id, value: group.id %>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                </td>
+              <% when Sys::AddressSetting.state_items?(key_name) %>
+                <td><%= f.radio_buttons(:state, Gw::WebmailPublicAddressBook.states, style: "width:auto;") %></td>
+              <% else %>
+                <td><%= f.text_field item_name %></td>
+              <% end %>
+          </tr>
+        <% end %>
+      </table>
+
+      <div class="submitters">
+        <%= f.submit %>
+      </div>
+    </td>
+  </tr>
+<% end %>
+
+      </div>
+    </td>
+  </tr>
+</table>

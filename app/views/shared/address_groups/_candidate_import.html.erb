@@ -1,0 +1,85 @@
+<script type="text/javascript">
+//<![CDATA[
+function toggleResult(result) {
+  switch (result) {
+  case 'success':
+    $('successAddresses').style.display = 'block';
+  $('errorAddresses').style.display = 'none';
+  break;
+  case 'error':
+    $('successAddresses').style.display = 'none';
+  $('errorAddresses').style.display = 'block';
+  break;
+  }
+}
+//]]>
+</script>
+
+<%= form_for :candidate_data, url: { action: :exec_import } do |origin_f| %>
+
+  <%= hidden_field_tag :id, @book.id if @book.present? %>
+  <%= hidden_field_tag :csv_format_type, @csv_form.format_type %>
+
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailMenu">
+      <div id="webmailMenuContainer">
+        <%= render partial: "csv_menu" %>
+      </div>
+    </td>
+    <td id="webmailContent">
+      <div id="addressContent">
+
+        <table class="show countAddresses">
+          <tr>
+            <th><%= t("rumi.public_address_book.action.csv.candidate_import.valid_addresses.name") %></th>
+            <td><%= @valid_addresses.size %> <%= t("helpers.number.unit.addresses") %></td>
+          </tr>
+          <tr>
+            <th><%= t("rumi.public_address_book.action.csv.candidate_import.invalid_addresses.name") %></th>
+            <td><%= @invalid_addresses.size %> <%= t("helpers.number.unit.addresses") %></td>
+          </tr>
+        </table>
+
+        <div class="actionMenu">
+          <%= link_to t("rumi.public_address_book.action.csv.candidate_import.show_valid.name"),
+            '#', onclick: "toggleResult('success');return false;"%>
+          <%= link_to t("rumi.public_address_book.action.csv.candidate_import.show_invalid.name"),
+            '#', onclick: "toggleResult('error');return false;"%>
+        </div>
+
+        <% show_affiliated_groups = @csv_form.format_rumi? %>
+
+        <div id="successAddresses">
+          <%= render partial: "shared/address_groups/candidate_import_new_group",
+            locals: { new_groups: @new_groups, origin_f: origin_f } if show_affiliated_groups %>
+
+          <p class="form" style="margin-top:10px;">
+            <%= t("rumi.public_address_book.action.csv.candidate_import.valid_addresses.name") %>
+            <br />
+            <%= t("rumi.public_address_book.action.csv.candidate_import.valid_addresses.note").html_safe %>
+          </p>
+
+          <%= render partial: "shared/address_groups/candidate_import_valid_address",
+            locals: { show_affiliated_groups: show_affiliated_groups, origin_f: origin_f } %>
+        </div>
+
+        <div id="errorAddresses" style="display:none">
+          <p class="form">
+            <%= t("rumi.public_address_book.action.csv.candidate_import.invalid_addresses.name") %>
+          </p>
+
+          <%= render partial: "shared/address_groups/candidate_import_invalid_address" %>
+        </div>
+
+        <div class="submitters">
+          <%= origin_f.submit t("helpers.submit.csv_import"), name: :csv_import,
+            disabled: @valid_addresses.count.zero?, disable_with: t("helpers.message.disable_with") %>
+        </div>
+
+      </div>
+    </td>
+  </tr>
+</table>
+
+<% end %>

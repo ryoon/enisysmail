@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<items>
+  <count><%= @addresses.size %></count>
+  <% @addresses.each do |address| %>
+  <item>
+    <id><%= address.id %></id>
+    <name><%= address.name %></name>
+    <email><%= address.email %></email>
+  </item>
+  <% end %>
+</items>

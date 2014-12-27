@@ -1,0 +1,8 @@
+<% if @group && Core.user.public_address_book_editable_user?(@book) %>
+  <div class="rightMenu">
+    <%= link_to operation_edit_name, edit_gw_webmail_public_address_group_path(@group),
+      class: "editGroup", title: operation_edit_name %>
+    <%= link_to operation_destroy_name, @group, confirm: t("helpers.message.group_destroy"),
+      method: :delete, class: "submit-action-menu" %>
+  </div>
+<% end %>

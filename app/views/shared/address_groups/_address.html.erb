@@ -1,0 +1,181 @@
+<% mail_to_types = ["to", "cc", "bcc"] %>
+
+<div id="addressesAll">
+  <p class="form"><%= group_name %></p>
+
+  <div class="actionMenu">
+
+    <div class="leftMenu">
+      <%= build_create_mail_button %>
+    </div>
+
+    <%# 共有アドレス帳 %>
+    <% if public_address_action_member? %>
+      <%= render partial: "shared/address_groups/public_address/group_operation_link" %>
+
+      <div style="clear:both;"></div>
+
+      <div class="rightMenu">
+        <span class="addAddressRemarks"><%= t("rumi.operation.add_private_address.name") %></span>
+      </div>
+    <%# 個人アドレス帳 %>
+    <% else %>
+      <%= render partial: "shared/address_groups/private_address/group_operation_link" %>
+    <% end %>
+
+    <div style="clear:both;"></div>
+  </div>
+
+  <% list_view_address_items = Sys::AddressSetting.extract_list_view_address_item %>
+  <%# 個人アドレス帳 %>
+  <% list_view_address_items = list_view_address_items.without_state unless public_address_action_member? %>
+
+  <table id="sortable-table" class="index">
+    <thead>
+      <tr>
+        <% mail_to_types.each do |column_name| %>
+          <th class="checkUI">
+            <% link_title = column_name.upcase %>
+            <%= link_to link_title, "#", id: "#{column_name}_chekable_column_ui", title: link_title %>
+          </th>
+        <% end %>
+
+        <% last_list_item = list_view_address_items.last %>
+        <% list_view_address_items.each do |address_item| %>
+          <% key_name = address_item.key_name %>
+          <% th_element_id = "sortable-th-#{key_name}" %>
+          <% th_css = "address-list-view-item-last-#{(last_list_item == address_item).to_s}" %>
+
+          <th id="<%= th_element_id %>" class="sortable-th <%= th_css %>">
+            <%= link_to Gw::WebmailPublicAddress.human_attribute_name(key_name), "#",
+              onclick: "rumi.ui.setSortedMark(this, '#{th_element_id}');return false;" %>
+          </th>
+        <% end %>
+
+        <%# 個人/共有アドレス帳に登録する %>
+        <th class="add-address-button-column"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% addresses.each do |address| %>
+      <tr <%= cycle '', 'class="cycle"' %>>
+        <% mail_to_types.each do |column_name| %>
+          <td class="checkUI"><%= check_box_tag "#{column_name}[#{address.id}]", 1, false, { class: "groupAll" } %></td>
+        <% end %>
+
+        <% last_list_item = list_view_address_items.last %>
+        <% list_view_address_items.each do |address_item| %>
+          <% key_name = address_item.key_name %>
+          <% item_name = key_name.to_sym %>
+          <% td_css = "address-list-view-item-last-#{(last_list_item == address_item).to_s}" %>
+          <td class="<%= td_css %>">
+
+          <% case true %>
+          <% when Sys::AddressSetting.affiliated_group_items?(key_name) %>
+            <div>
+              <%# 共有アドレス帳 %>
+              <% if public_address_action_member? %>
+                <%= render partial: "shared/address_groups/public_address/affiliated_group", locals: { address: address } %>
+              <%# 個人アドレス帳 %>
+              <% else %>
+                <%= render partial: "shared/address_groups/private_address/affiliated_group", locals: { address: address } %>
+              <% end %>
+            </div>
+
+          <% when Sys::AddressSetting.state_items?(key_name) %>
+            <%= Gw::WebmailPublicAddressBook.state_show(address[item_name]) %>
+
+          <% when Sys::AddressSetting.name_items?(key_name) %>
+            <% if public_address_action_member? %>
+              <%= link_to address.name, gw_webmail_public_address_path(address) %>
+            <% else %>
+              <%= link_to address.name, gw_webmail_address_path(address) %>
+            <% end %>
+
+          <% else %>
+            <%= address[item_name] %>
+          <% end %>
+
+          </td>
+        <% end %>
+
+        <td class="add-address-button-column">
+          <%# 共有アドレス帳 %>
+          <% if public_address_action_member? %>
+            <%= link_to("", "#top", title: t("rumi.operation.add_private_address.name"), class: "addAddress",
+              onclick: %Q!rumi.ui.addAddressToPrivateAddressBook('#{escape_javascript(address.email)}', '#{escape_javascript(address.name)}', '#{escape_javascript(address.kana)}', '#{address.id}');return false;!) %>
+          <%# 個人アドレス帳 %>
+          <% else %>
+            <%= link_to("", "#top", title: t("rumi.operation.add_public_address.name"), class: "addAddress",
+              onclick: %Q!addAddressToPublicAddressBook('#{escape_javascript(address.email)}', '#{escape_javascript(address.name)}', '#{escape_javascript(address.kana)}', '#{address.id}');return false;!) %>
+          <% end %>
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
+
+  </table>
+
+  <%= javascript_tag "new rumi.ui.CheckableColumn('to_chekable_column_ui', 'to');" %>
+  <%= javascript_tag "new rumi.ui.CheckableColumn('cc_chekable_column_ui', 'cc');" %>
+  <%= javascript_tag "new rumi.ui.CheckableColumn('bcc_chekable_column_ui', 'bcc');" %>
+
+  <div class="actionMenu">
+    <div class="leftMenu">
+      <%= build_create_mail_button %>
+    </div>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+function createMail() {
+  var frm = document.users;
+  var len = frm.elements.length;
+  var chk = {to : 0, cc : 0, bcc : 0};
+  for ( var i = 0; i < len; i++) {
+    if (frm.elements[i].checked != true) continue;
+    if (frm.elements[i].name.match(/^to\[/)) {
+      chk['to'] += 1;
+    } else if (frm.elements[i].name.match(/^cc\[/)) {
+      chk['cc'] += 1;
+    } else if (frm.elements[i].name.match(/^bcc\[/)) {
+      chk['bcc'] += 1;
+    }
+  }
+  if (chk['to'] + chk['cc'] + chk['bcc'] == 0) {
+    alert("ユーザを選択してください。");
+    return false;
+  } else if (chk['to'] > 150) {
+    alert("宛先に選択できるのは150件までです。");
+    return false;
+  } else if (chk['cc'] > 150) {
+    alert("Ccに選択できるのは150件までです。");
+    return false;
+  } else if (chk['bcc'] > 150) {
+    alert("Bccに選択できるのは150件までです。");
+    return false;
+  }
+  var w = openMailForm("", '<%=raw mail_form_style %>', "mailForm" + new Date().getTime());
+  frm.target = w.name;
+  frm.submit();
+  return false;
+};
+//]]>
+</script>
+
+<script>
+  jQuery(document).ready(function(e) {
+    jQuery(rumi.ui.idSelector("sortable-table")).tablesorter({
+      headers: {
+        0: {sorter: false},
+        1: {sorter: false},
+        2: {sorter: false}
+      },
+      emptyTo: "zero",
+      selectorSort: "a"
+    });
+  });
+</script>

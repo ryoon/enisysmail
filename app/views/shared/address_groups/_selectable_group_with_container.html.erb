@@ -1,0 +1,14 @@
+<ul class="root" id="address_groups_container">
+  <%= render partial: "shared/address_groups/searche_group" if params[:search].present? %>
+  <li class="folder">
+    <%= link_to_update_affiliated_address(t("rumi.public_address_group.all_address_group.name"),
+      all_address_group_id, inital_current_address_group_id) %>
+  </li>
+  <%= render partial: "shared/address_groups/selectable_group", locals: { groups: groups } %>
+</ul>
+
+<script>
+  jQuery(document).ready(function(e) {
+    new rumi.ui.CurrentLinkSetter("address_groups_container", "address_group_link");
+  });
+</script>

@@ -1,0 +1,42 @@
+<%= form_for @role do |f| %>
+
+  <table class="show">
+    <tr>
+      <th class="blueIndex">
+        <%= Sys::PublicAddressBookRole.human_attribute_name(:admin_groups_json) %>
+        <span style="color:red;">
+          <br>
+          <%= t("rumi.public_address_book_role.admin_groups_json.note") %>
+        </span>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          hidden_item_name: "sys_public_address_book_role[admin_groups_json]",
+          values: @role.admin_groups_json,
+          ui_mode: ui_mode_groups_default
+        } %>
+      </td>
+    </tr>
+    <tr>
+      <th class="blueIndex">
+        <%= Sys::PublicAddressBookRole.human_attribute_name(:admin_users_json) %>
+        <span style="color:red;">
+          <br>
+          <%= t("rumi.public_address_book_role.admin_users_json.note") %>
+        </span>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          hidden_item_name: "sys_public_address_book_role[admin_users_json]",
+          values: @role.admin_users_json,
+          ui_mode: ui_mode_users_public_address_book_role
+        } %>
+      </td>
+    </tr>
+  </table>
+
+  <div class="submitters">
+    <%= f.submit %>
+  </div>
+
+<% end %>

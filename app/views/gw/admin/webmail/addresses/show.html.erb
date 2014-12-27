@@ -1,0 +1,53 @@
+<%= javascript_include_tag "/_common/js/mail_form.js" %>
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailContent">
+      <div id="addressContent">
+        <div class="actionMenu">
+          <%= link_to :index, gw_webmail_address_groups_path %>
+          <%= action_menu :edit    if safe{@item.editable?} %>
+          <%= action_menu :destroy if safe{@item.deletable?} %>
+          <%= link_to "メール作成", '#', :onclick => open_mail_form(create_mail_gw_webmail_address_path) %>
+        </div>
+
+<table style="width: 100%;">
+  <tr>
+    <td style="width: 49%; vertical-align: top;">
+      <table class="show addressInfo">
+        <% Sys::AddressSetting.without_state.extract_used_address_item.each do |address_item| %>
+        <tr>
+          <% key_name = address_item.key_name %>
+          <% item_name = key_name.to_sym %>
+          <th><%= Gw::WebmailAddress.human_attribute_name(item_name) %></th>
+
+          <% case true %>
+          <% when Sys::AddressSetting.affiliated_group_items?(key_name) %>
+            <td>
+              <% if @item.groups.count.zero? %>
+                <%= t("rumi.public_affiliated_address_group.none.name") %>
+              <% else %>
+                <% @item.sorted_groups.each do |g| %>
+                  <div>
+                    <% g.parents_tree_names.each_with_index do |name, idx| %>
+                      <%= (idx > 0 ? ' > ' : '') + name %>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </td>
+
+          <% else %>
+            <td><%= @item[item_name] %></td>
+          <% end %>
+        </tr>
+        <% end %>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+      </div>
+    </td>
+  </tr>
+</table>

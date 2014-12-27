@@ -1,0 +1,12 @@
+<% if @group %>
+  <div class="rightMenu">
+    <%= link_to operation_edit_name, edit_gw_webmail_address_group_path(@group), class: "editGroup", title: operation_edit_name %>
+    <%= link_to operation_destroy_name, @group, confirm: t("helpers.message.group_destroy"), method: :delete, class: "submit-action-menu" %>
+  </div>
+<% end %>
+
+<div style="clear:both;"></div>
+
+<div class="address-book-selector" style="padding-left: 15px;margin: 10px 0px 0px 15px;">
+  <%= render partial: "shared/address_groups/private_address/address_book_selector" %>
+</div>

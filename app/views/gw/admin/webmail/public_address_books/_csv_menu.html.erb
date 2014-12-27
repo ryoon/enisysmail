@@ -1,0 +1,9 @@
+<div class="actionMenu">
+  <%= link_to t("rumi.operation.return_public_address_book.name"),
+    gw_webmail_public_address_groups_path(build_public_address_path_queries), style: "margin-bottom: 10px;" %>
+
+  <%= link_to t("rumi.public_address_book.action.csv.import.name"), 
+    import_gw_webmail_public_address_book_path(@book), style: "margin-bottom: 10px;" %>
+  <%= link_to t("rumi.public_address_book.action.csv.export.name"), 
+    export_gw_webmail_public_address_book_path(@book) %>
+</div>

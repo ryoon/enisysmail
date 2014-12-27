@@ -1,0 +1,98 @@
+ja: 
+  activerecord: 
+    attributes: 
+      gw/webmail:
+      gw/webmail_mailbox:
+        title: "フォルダ名"
+      gw/webmail_address:
+        group_id: "グループ" 
+        name: "名前"
+        email: "メールアドレス"
+        memo: "メモ"
+        kana: "名前フリガナ"
+        company_name: "会社名"
+        company_kana: "会社名フリガナ"
+        official_position: "役職"
+        company_tel: "電話番号（会社）"
+        company_fax: "ファクシミリ（会社）"
+        company_zip_code: "郵便番号（会社）"
+        company_address: "住所（会社）"
+        tel: "電話番号（自宅）"
+        fax: "ファクシミリ（自宅）"
+        zip_code: "郵便番号（自宅）"
+        address: "住所（自宅）"
+        mobile_tel: "携帯電話"
+        uri: "URL"
+        sort_no: "並び順"
+        state: "状態"
+      gw/webmail_address_group: 
+        parent_id: "親グループ"
+        name: "グループ名"
+      gw/webmail_public_address_book:
+        name: 共有アドレス帳名
+        state: 状態
+        editable_groups_json: 編集部門設定
+        editable_users_json: 編集者設定
+        readable_groups_json: 閲覧部門設定
+        readable_users_json: 閲覧者設定
+      gw/webmail_public_address_group:
+        name: :activerecord.attributes.gw/webmail_address_group.name
+        parent_id: :activerecord.attributes.gw/webmail_address_group.parent_id
+      gw/webmail_public_address:
+        group_id: :activerecord.attributes.gw/webmail_address.group_id
+        name: :activerecord.attributes.gw/webmail_address.name
+        email: :activerecord.attributes.gw/webmail_address.email
+        memo: :activerecord.attributes.gw/webmail_address.memo
+        kana: :activerecord.attributes.gw/webmail_address.kana
+        company_name: :activerecord.attributes.gw/webmail_address.company_name
+        company_kana: :activerecord.attributes.gw/webmail_address.company_kana
+        official_position: :activerecord.attributes.gw/webmail_address.official_position
+        company_tel: :activerecord.attributes.gw/webmail_address.company_tel
+        company_fax: :activerecord.attributes.gw/webmail_address.company_fax
+        company_zip_code: :activerecord.attributes.gw/webmail_address.company_zip_code
+        company_address: :activerecord.attributes.gw/webmail_address.company_address
+        tel: :activerecord.attributes.gw/webmail_address.tel
+        fax: :activerecord.attributes.gw/webmail_address.fax
+        zip_code: :activerecord.attributes.gw/webmail_address.zip_code
+        address: :activerecord.attributes.gw/webmail_address.address
+        mobile_tel: :activerecord.attributes.gw/webmail_address.mobile_tel
+        uri: :activerecord.attributes.gw/webmail_address.uri
+        sort_no: :activerecord.attributes.gw/webmail_address.sort_no
+        state: :activerecord.attributes.gw/webmail_address.state
+      gw/webmail_sign: 
+        name: "署名タイトル"
+        body: "内容"
+        default_flag: "既定の署名"
+      gw/webmail_filter: 
+        state: "状態"
+        name: "フィルタ名"
+        sort_no: "並び順"
+        action: "動作"
+        mailbox: "対象フォルダ"
+        conditions_chain: "条件の結合"
+        in_conditions: "条件"
+      gw/webmail_template: 
+        name: "テンプレート名"
+        to: "宛先"
+        cc: "Cc"
+        bcc: "Bcc"
+        subject: "件名"
+        body: "本文"
+        default_flag: "既定のテンプレート"
+      gw/webmail_setting:
+        mobile_access: "モバイルアクセス" 
+        mobile_password: "モバイルパスワード" 
+        memo_body: "本文" 
+        updated_at: "更新日時" 
+      gw/webmail_doc: 
+        state: "状態"
+        sort_no: "並び順"
+        title: "タイトル"
+        body: "本文"
+        created_at: "作成日時"
+        updated_at: "更新日時"
+        published_at: "公開日時"
+      gw/webmail_tool_batch_delete_setting: 
+        mailbox_id: メールボックス
+        start_date: 削除開始日
+        end_date: 削除終了日

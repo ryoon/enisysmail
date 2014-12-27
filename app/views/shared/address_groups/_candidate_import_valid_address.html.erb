@@ -1,0 +1,20 @@
+<%= render partial: "shared/address_groups/candidate_import_address",
+  locals: { addresses: @valid_addresses, show_affiliated_groups: show_affiliated_groups } %>
+
+<% @valid_addresses.each_with_index do |address, i| %>
+  <%= origin_f.fields_for :importable_addresses, index: i do |f| %>
+    <% t("rumi.attributes.#{@csv_form.format_type}.import").keys.each do |attr_key| %>
+      <%= f.hidden_field attr_key, value: address[attr_key] if attr_key != :affliated_group_names %>
+    <% end %>
+
+    <% if show_affiliated_groups %>
+      <% address.provisional_affiliated_groups.each_with_index do |affiliated_group, n| %>
+        <%= f.fields_for :affliated_group_names, index: n do |child_f| %>
+          <% directory_notation_name = join_directory_notation(affiliated_group.map(&:name)) %>
+          <%= child_f.hidden_field :directory_notation_name, value: directory_notation_name %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+  <% end %>
+<% end %>

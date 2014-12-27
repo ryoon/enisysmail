@@ -1,0 +1,86 @@
+<% uniq_id ||= create_uniq_id %>
+
+<% parent_groups ||= nil %>
+<% parent_group_selected ||= nil %>
+<% parent_disable_group_ids ||= [] %>
+<% parent_prompt ||= false %>
+<% include_blank = parent_prompt.present? ? false : true %>
+
+<% child_groups ||= [] %>
+<% child_group_selected ||= nil %>
+
+<% ui_mode ||= :unknown %>
+
+<%# グループ選択UI %>
+<% if ui_mode_groups?(ui_mode) %>
+  <% values = update_select_group_values(values) %>
+  <% ajax_url = RumiHelper::GET_CHILD_GROUPS_URI %>
+  <% ajax_data = RumiHelper::GET_CHILD_GROUPS_SETTINGS[:default] %>
+
+  <% case ui_mode %>
+  <%# 通常のグループ選択UI %>
+  <% when ui_mode_groups_default %>
+    <% select_parent_group_options = RumiHelper::PARENT_GROUP_SETTINGS[:default] %>
+
+  <%# 制限なしを選択肢に含むグループ選択UI %>
+  <% when ui_mode_groups_include_no_limit %>
+    <% select_parent_group_options = RumiHelper::PARENT_GROUP_SETTINGS[:include_no_limit] %>
+  <% end %>
+
+<% end %>
+
+<%# ユーザー選択UI %>
+<% if ui_mode_users?(ui_mode) %>
+  <% values = update_select_user_values(values) %>
+  <% ajax_url = RumiHelper::GET_USERS_URL %>
+  <% select_parent_group_options = RumiHelper::PARENT_GROUP_SETTINGS[:default] %>
+
+  <% case ui_mode %>
+  <%# 通常のユーザー選択UI %>
+  <% when ui_mode_users_default %>
+    <% ajax_data = RumiHelper::GET_USERS_SETTINGS[:default] %>
+
+  <%# 共有アドレス帳管理権限用のユーザー選択UI %>
+  <% when ui_mode_users_public_address_book_role %>
+    <% ajax_data = RumiHelper::GET_USERS_SETTINGS[:public_address_book_role] %>
+  <% end %>
+
+<% end %>
+
+<% fix_json_value ||= "null" %>
+
+<% dummy_form = join_underbar("dummy", uniq_id) %>
+
+<%= javascript_tag "var #{uniq_id} = new rumi.ui.SelectGroup('#{uniq_id}', '#{trim_form_item_name(hidden_item_name)}', '#{ajax_url}', #{ajax_data.to_json}, #{fix_json_value});" %>
+
+<table border="0"><tr>
+  <td class="userChange">
+    <%= select_tag(join_underbar(dummy_form, "parent_list"), options_for_select(
+      build_select_parent_groups(parent_groups, select_parent_group_options),
+        selected: parent_group_selected, disabled: parent_disable_group_ids),
+      include_blank: include_blank, prompt: parent_prompt, class: "multiple-selector",
+      onchange: "#{uniq_id}.changeParent(this.value);") %>
+    <br />
+
+    <%= select_tag(join_underbar(dummy_form, "child_list"), options_for_select(child_groups, child_group_selected),
+      size: 10, class: "multiple-selector", ondblclick: "#{uniq_id}.addSelectedChild();", multiple: true) %>
+  </td>
+
+  <td>
+    <%= button_to_function t("rumi.config.button.add"),
+      "#{uniq_id}.addSelectedChild();", id: join_underbar(dummy_form, "add_btn") %>
+    <br /><br />
+    <%= button_to_function t("rumi.config.button.remove"),
+      "#{uniq_id}.removeSelectedChild();", id: join_underbar(dummy_form, "remove_btn") %>
+  </td>
+
+  <td>
+    <%= select_tag(join_underbar(dummy_form, "selected_list"), '', size: 10, class: "multiple-selector",
+      ondblclick: "#{uniq_id}.removeSelectedChild();", multiple: true) %>
+
+    <%= hidden_field_tag(hidden_item_name, '') %>
+  </td>
+
+</tr></table>
+
+<%= javascript_tag "#{uniq_id}.initSelected(#{values});" %>

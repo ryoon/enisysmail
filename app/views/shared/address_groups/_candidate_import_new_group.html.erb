@@ -1,0 +1,28 @@
+<p class="form" style="margin-top:10px;">
+  <%= t("rumi.public_address_book.action.csv.candidate_import.new_groups.name") %>
+</p>
+
+<table class="index">
+  <tr>
+    <th><%= Gw::WebmailPublicAddressGroup.human_attribute_name(:name) %></th>
+  </tr>
+  <% new_groups.each_with_index do |new_group, i| %>
+
+    <% directory_notation_name = join_directory_notation(new_group.map(&:name)) %>
+
+    <tr <%= cycle '', 'class="cycle"' %>>
+      <td>
+        <%= directory_notation_name %>
+      </td>
+    </tr>
+
+    <%# 最後のグループ情報が作成するグループに該当する %>
+    <% group = new_group.last %>
+    <%= origin_f.fields_for :new_groups, index: i do |f| %>
+      <%= f.hidden_field :name, value: group.name %>
+      <%= f.hidden_field :level_no, value: group.level_no %>
+      <%= f.hidden_field :directory_notation_name, value: directory_notation_name %>
+    <% end %>
+
+  <% end %>
+</table>

@@ -1,0 +1,7 @@
+<div class="actionMenu">
+  <% if action_name == "edit" %>
+    <%= link_to("一覧", sys_public_address_book_roles_path) %>
+  <% else %>
+    <%= link_to("編集", edit_sys_public_address_book_role_path(@role)) %>
+  <% end %>
+</div>

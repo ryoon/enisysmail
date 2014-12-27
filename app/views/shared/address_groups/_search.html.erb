@@ -1,0 +1,19 @@
+<% form_url = public_address_action_member? ? gw_webmail_public_address_groups_path : gw_webmail_address_groups_path %>
+
+<%= form_tag form_url, method: :get, id: "address_search_form", class: "search" do %>
+  <table>
+    <tr>
+      <th><%= Gw::WebmailPublicAddress.human_attribute_name(:name) %></th>
+      <td><%= text_field_tag :s_name_or_kana, params[:s_name_or_kana], class: "name", style: "width: 120px" %></td>
+      <th><%= Gw::WebmailPublicAddress.human_attribute_name(:email) %></th>
+      <td><%= text_field_tag :s_email, params[:s_email], class: "email", style: "width: 200px" %></td>
+
+      <td class="formSubmitters">
+        <%= submit_tag t("helpers.submit.search"), name: :search %>
+        <%= submit_tag t("helpers.submit.reset"), name: :reset %>
+      </td>
+    </tr>
+  </table>
+
+  <%= hidden_field_tag(:book_id, @book.id) if @book %>
+<% end %>

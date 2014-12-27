@@ -1,0 +1,254 @@
+ja: 
+  activerecord: 
+    models: 
+    attributes: 
+  errors:
+    template:
+      header:
+        #one: "%{model}にエラーが発生しました。"
+        one: "エラーがあります。"
+        #other: "%{model}に%{count}つのエラーが発生しました。"
+        other: "%{count}個のエラーがあります。"
+      # The variable :count is also available
+      body: "次の項目を確認してください。"
+  activemodel:
+    attributes:
+      rumi_helper/csv_form:
+        file: CSVファイル
+        format_type: 形式
+        format_names:
+          rumi_address_csv: 縁sys用
+          win_ms_address_csv: Windows Essentials用
+    errors:
+      models:
+        rumi_helper/csv_form:
+          attributes:
+            file: :activerecord.errors.messages
+            format_type: :activerecord.errors.messages
+  helpers:
+    submit:
+      create: 登録する
+      submit: 保存する
+      update: 確定する
+      search: 検索
+      reset: リセット
+      candidate_import: 読み込み
+      csv_import: インポート
+      csv_export: エクスポート
+    message:
+      destroy: 削除してよろしいでしょうか?
+      group_destroy: グループを削除してもよろしいですか？ \n注：連絡先は削除されません。（グループ登録のみ解除されます。）
+      disable_with: 処理中
+    number:
+      unit:
+        addresses: 件
+  rumi:
+    mail:
+      name: メール
+    attributes:
+      rumi_address_csv:
+        import:
+          name: 表示名
+          kana: 表示名フリガナ
+          sort_no: 並び順
+          email: 電子メール アドレス
+          mobile_tel: 携帯電話
+          uri: 個人 Web ページ
+          tel: 自宅電話番号
+          fax: 自宅ファックス
+          zip_code: 自宅の郵便番号
+          address:
+            address_state: 自宅の都道府県
+            address_city: 自宅の市区町村
+            address_street: 自宅の番地
+          company_name: 会社名
+          company_kana: 会社名フリガナ
+          official_position: 役職
+          company_tel: 勤務先電話番号
+          company_fax: 勤務先ファックス
+          company_zip_code: 勤務先の郵便番号
+          company_address:
+            company_address_state: 勤務先の都道府県
+            company_address_city: 勤務先の市区町村
+            company_address_street: 勤務先の番地
+          memo: メモ
+          affliated_group_names: グループ指定
+        export: :rumi.attributes.rumi_address_csv.import
+      win_ms_address_csv:
+        import:
+          name: :rumi.attributes.rumi_address_csv.import.name
+          # kana: 表示名フリガナ
+          # sort_no: 並び順
+          email: :rumi.attributes.rumi_address_csv.import.email
+          mobile_tel: :rumi.attributes.rumi_address_csv.import.mobile_tel
+          uri: :rumi.attributes.rumi_address_csv.import.uri
+          tel: :rumi.attributes.rumi_address_csv.import.tel
+          fax: :rumi.attributes.rumi_address_csv.import.fax
+          zip_code: :rumi.attributes.rumi_address_csv.import.zip_code
+          address: :rumi.attributes.rumi_address_csv.import.address
+          company_name: :rumi.attributes.rumi_address_csv.import.company_name
+          # company_kana: 会社名フリガナ
+          official_position: :rumi.attributes.rumi_address_csv.import.official_position
+          company_tel: :rumi.attributes.rumi_address_csv.import.company_tel
+          company_fax: :rumi.attributes.rumi_address_csv.import.company_fax
+          company_zip_code: :rumi.attributes.rumi_address_csv.import.company_zip_code
+          company_address: :rumi.attributes.rumi_address_csv.import.company_address
+          memo: :rumi.attributes.rumi_address_csv.import.memo
+        export:
+          name: :rumi.attributes.rumi_address_csv.import.name
+          kana: :rumi.attributes.rumi_address_csv.import.kana
+          sort_no: :rumi.attributes.rumi_address_csv.import.sort_no
+          email: :rumi.attributes.rumi_address_csv.import.email
+          mobile_tel: :rumi.attributes.rumi_address_csv.import.mobile_tel
+          uri: :rumi.attributes.rumi_address_csv.import.uri
+          tel: :rumi.attributes.rumi_address_csv.import.tel
+          fax: :rumi.attributes.rumi_address_csv.import.fax
+          zip_code: :rumi.attributes.rumi_address_csv.import.zip_code
+          address: :rumi.attributes.rumi_address_csv.import.address
+          company_name: :rumi.attributes.rumi_address_csv.import.company_name
+          company_kana: :rumi.attributes.rumi_address_csv.import.company_kana
+          official_position: :rumi.attributes.rumi_address_csv.import.official_position
+          company_tel: :rumi.attributes.rumi_address_csv.import.company_tel
+          company_fax: :rumi.attributes.rumi_address_csv.import.company_fax
+          company_zip_code: :rumi.attributes.rumi_address_csv.import.company_zip_code
+          company_address: :rumi.attributes.rumi_address_csv.import.company_address
+          memo: :rumi.attributes.rumi_address_csv.import.memo
+    operation:
+      edit:
+        name: 編集
+      destroy:
+        name: 削除
+      create_mail:
+        name: メール作成
+      add_private_address:
+        name: 個人アドレス帳に登録する
+      add_public_address:
+        name: 共有アドレス帳に登録する
+        prompt: 共有アドレス帳名を選択してください。
+        message:
+          errors:
+            base: 既に登録されています。
+      return_public_address_book:
+        name: 共有アドレス帳に戻る
+      return_private_address_book:
+        name: 個人アドレス帳に戻る
+      authority_change:
+        name: 権限設定変更
+    public_address_book_role:
+      admin_groups_json:
+        note: 所属する全ての人が管理者になります。
+      admin_users_json:
+        note: 指定された個人が管理者になります。
+    public_address_group:
+      indented: "&nbsp;"
+      breadcrumbs_list: " > "
+      directory_notation: "/"
+      delimiter: ";"
+      root_group:
+        include_blank: （ルート階層）
+      all_address_group:
+        name: すべて
+      search_group:
+        name: 検索結果
+      action:
+        new:
+          name: グループの登録
+    public_affiliated_address_group:
+      none:
+        name: 未分類
+    private_address_book:
+      name: 個人アドレス帳
+      action:
+        csv:
+          import:
+            name: :rumi.public_address_book.action.csv.import.name
+            message:
+              success: :rumi.public_address_book.action.csv.import.message.success
+              error: :rumi.public_address_book.action.csv.import.message.error
+          export:
+            name: :rumi.public_address_book.action.csv.export.name
+            message:
+              error: :rumi.public_address_book.action.csv.export.message.error
+    public_address_book:
+      action:
+        new:
+          name: アドレス帳の登録
+        csv:
+          import:
+            name: CSVインポート
+            message:
+              success: 正常にインポートされました。
+              error: エラーが発生しました。ファイル内容と文字コードを確認してください。
+              email_exists: （重複）
+          export:
+            name: CSVエクスポート
+            message:
+              error: 予期せぬエラーが発生しました。
+          candidate_import:
+            valid_addresses:
+              name: インポートできるアドレス
+              note: "※&nbsp;メールアドレスに「（重複）」が表示されているものは各項目が上書きされます。<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;グループ指定は追加のみ行います。"
+            invalid_addresses:
+              name: インポートできないアドレス
+            new_groups:
+              name: 作成するグループ
+            show_valid:
+              name: インポートできるアドレスを表示
+            show_invalid:
+              name: インポートできないアドレスを表示
+      states:
+        1: 公開
+        2: 非公開
+      editable_groups_json:
+        note: 自動的に閲覧権限も付与されます。
+      editable_users_json:
+        note: 指定された個人に編集権限が付与されます。<br />自動的に閲覧権限も付与されます。
+      readable_users_json:
+        note: 指定された個人に閲覧権限が付与されます。
+    public_address:
+      action:
+        new:
+          name: 連絡先の登録
+    attachment:
+      message:
+       name_too_long: ファイル名が長すぎるため保存できませんでした。
+       failure_upload: ファイルのアップロードに失敗しました。
+       already_exists: "%{file}は既に存在します。"
+       reverse_folder: フォルダ階層を逆転させることはできません。
+       folder_moved: フォルダを移動しました。
+    account:
+      message:
+        switch: ユーザーを切り替えています。
+        switch_note: ラベルの設定等、ログインユーザーと切替ユーザーで異なる部分に注意してください。
+    rumi_helper:
+      csv_form:
+        file:
+          message:
+            invalid: は拡張子が「csv」のファイルを指定してください。
+    config:
+      button:
+        add: 追加 →
+        remove: ← 削除
+    sys/group:
+      no_limit:
+        name: 制限なし
+    new_mail:
+      send:
+        confirm: 送信します。よろしいですか？
+        message: 送信中です
+      draft:
+        confirm: 下書き保存します。よろしいですか？
+        message: 下書き保存中です
+      destroy:
+        confirm: 編集内容を破棄します。よろしいですか？
+        message: 破棄中です
+    sys:
+      menu:
+        maintenance: メンテナンス
+        doc: ヘルプ
+        switch_user: ユーザ
+        language: 言語
+        address: 個人アドレス帳・共有アドレス帳
+      address:
+        sys_address: 個人アドレス帳・共有アドレス帳項目設定
+        sys_public_address_book_role: 共有アドレス帳管理権限

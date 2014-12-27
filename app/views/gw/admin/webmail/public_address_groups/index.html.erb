@@ -1,0 +1,38 @@
+<%= javascript_include_tag "/_common/js/mail_form.js" %>
+<%= javascript_include_tag "jquery.tablesorter.js" %>
+
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailMenu">
+      <div id="webmailMenuContainer">
+        <%= render partial: "menu" %>
+        <div class="mailbox">
+          <%= render partial: "shared/address_groups/selectable_group_with_container", locals: { groups: @root_groups } %>
+        </div>
+        <br />
+        <div class="actionMenu">
+          <% if Core.user.public_address_book_editable_user?(@book) %>
+            <%= link_to t("rumi.public_address_book.action.csv.import.name"), 
+              import_gw_webmail_public_address_book_path(@book), style: "margin-bottom: 10px;" %>
+            <%= link_to t("rumi.public_address_book.action.csv.export.name"), 
+              export_gw_webmail_public_address_book_path(@book) %>
+          <% end %>
+        </div>
+      </div>
+    </td>
+    <td id="webmailContent">
+      <div id="addressContent">
+        <%= render partial: "shared/address_groups/search" %>
+
+        <%# createMail用のform %>
+        <%= form_for(:item, url: create_mail_gw_webmail_public_address_groups_path,
+          html: {id: "users", name: "users", target: "_blank"}) do |f| %>
+          <div id="addresses">
+            <%= render partial: "shared/address_groups/address", locals: { addresses: @addresses,
+              group_name: inital_current_address_group_name } %>
+          </div>
+        <% end %>
+      </div>
+    </td>
+  </tr>
+</table>

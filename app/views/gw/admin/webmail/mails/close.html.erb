@@ -1,0 +1,22 @@
+<% unless flash[:notice] || flash[:error] %>
+  <%= javascript_tag do %>
+    var regexp = /webmail\/Drafts\/mails/;
+    try{
+      if (!!regexp.exec(window.opener.location)) {
+        window.opener.location.reload();
+      }
+      window.close();
+    }catch(e){
+      window.close();
+    }
+  <% end %>
+<% end %>
+<div id="mailFormContainer">
+<table id="webmailContainer"><tr><td id="webmailContent">
+<div id="mailContent" style="padding-top:10px;text-align: center;">
+
+<%= link_to 'メール一覧画面へ移動する', gw_webmail_mails_path(:mailbox => 'INBOX') %><br /><br />
+<%= button_to '閉じる', '', :onclick => "window.close();return false;" %>
+
+</div><!-- end #webmailContainer --></td></table>
+<!-- end #mailFormContainer --></div>

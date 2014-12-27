@@ -1,0 +1,11 @@
+<% if address.groups.count.zero? %>
+  <%= t("rumi.public_affiliated_address_group.none.name") %>
+<% else %>
+  <% address.sorted_groups.each do |g| %>
+    <div>
+      <% g.parents_tree_names.each_with_index do |name, idx| %>
+        <%= (idx > 0 ? ' > ' : '') + name %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

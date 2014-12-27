@@ -1,0 +1,43 @@
+<% if flash[:error] %><div style="color:red;margin:10px;"><%= flash[:error] %></div><% end %>
+<%= javascript_include_tag :defaults %>
+
+<%= form_for :item, :url => {:action => :create} do |f| %>
+  <ul id="sort" >
+    <table id="table_title" class="index" style="width:600px;">
+      <tr>
+        <th style="width:5px; border-right:0px;padding-left:0px;"></th>
+        <th style="width:200px; text-align:left;border-left:0px;">項目名</th>
+        <th style="width:60px; text-align:center;">使用する</th>
+        <th style="width:60px; text-align:center;">一覧表示</th>
+      </tr>
+    </table>
+    
+    <% @items.each do |item| %>
+      <% view_name = @view_names.include?(item.key_name) == true ? @view_names[item.key_name]:item.key_name %>
+      <% used_checked = item.used == '1' ? true:false %>
+      <% used_disabled = @use_readonly_keys.include?(item.key_name) ? true:false %>
+      <% list_checked = item.list_view == '1' ? true:false %>
+      <% list_disabled = @list_readonly_keys.include?(item.key_name) ? true:false %>
+
+      <li id="item_<%= item.sort_no %> " style="margin:0;">
+        <table id="table_row" class="index" style="width:600px;">
+          <tr <%= cycle '', 'class="cycle"' %> id= <%= "item_#{item.id}" %> >
+            <td style="width:1px; border-right:0px;" class="drag ui-draggable" id= <%= "item_drag_#{item.id}" %> ></td>
+            <td style="width:198px;text-align: left; border-left:0px;"><%= view_name %> </td>
+            <td style="width:60px; text-align: center;">
+              <%= f.check_box "#{item.id}[used]", {:checked => used_checked, :disabled => used_disabled} %>
+            </td>
+            <td style="width:60px; text-align: center;">
+              <%= f.check_box "#{item.id}[list_view]", {:checked => list_checked, :disabled => list_disabled} %>
+            </td>
+          </tr>
+        </table>
+      </li>
+    <% end %>
+  </ul>
+
+  <%= raw submit("更新") %>
+
+<% end %>
+
+<%= sortable_element 'sort', :handle => 'drag' %>

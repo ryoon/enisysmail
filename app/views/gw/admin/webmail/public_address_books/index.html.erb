@@ -1,0 +1,54 @@
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailMenu">
+      <div id="webmailMenuContainer">
+        <%= render partial: "menu" %>
+      </div>
+    </td>
+    <td id="webmailContent">
+      <div id="addressContent">
+        <div id="addresses">
+          <div id="addressesAll">
+
+            <table class="index">
+              <tr>
+                <th class="public-address-book-name">
+                  <%= Gw::WebmailPublicAddressBook.human_attribute_name(:name) %>
+                </th>
+
+                <th class="public-address-book-operation-link"><%= operation_authority_change_name %></th>
+                <th class="public-address-book-operation-link"><%= operation_destroy_name %></th>
+
+              </tr>
+              <% @books.each do |book| %>
+              <tr <%= cycle '', 'class="cycle"' %>>
+                <td>
+                  <%= link_to book.name, gw_webmail_public_address_groups_path(
+                    build_public_address_path_queries({ book: book })) %>
+                </td>
+
+                  <td class="public-address-book-operation-link">
+                    <% if Core.user.public_address_book_editable_user?(book) %>
+                      <span class="actionMenu">
+                        <%= link_to operation_authority_change_name, edit_gw_webmail_public_address_book_path(book), method: :get, class: "submit-action-menu" %>
+                      </span>
+                    <% end %>
+                  </td>
+                  <td class="public-address-book-operation-link">
+                    <% if Core.user.public_address_book_admin_user? %>
+                      <span class="actionMenu">
+                        <%= link_to operation_destroy_name, book, confirm: t("helpers.message.destroy"), method: :delete, class: "submit-action-menu" %>
+                      </span>
+                    <% end %>
+                  </td>
+
+              </tr>
+              <% end %>
+            </table>
+
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>

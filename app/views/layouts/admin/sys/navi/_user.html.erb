@@ -1,0 +1,3 @@
+<%#= link_to '共有アドレス帳管理権限', sys_public_address_book_roles_path, class: (current == :public_address_book_role ? 'current' : '')
+%><%= link_to "切替ユーザ登録", sys_switch_users_path, :class => (current == :switch_user ? 'current' : '')
+%><%#= link_to "プロダクト同期", sys_product_synchros_path, :class => (current == :product_synchro ? 'current' : '') %>

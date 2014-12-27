@@ -1,0 +1,21 @@
+<% groups.each do |group| %>
+  <li class="folder">
+    <%= link_to_update_affiliated_address(group.name, group.id) %>
+
+    <%# 共有アドレス帳 %>
+    <% if public_address_action_member? %>
+      <%#= render partial: "shared/address_groups/public_address/group_edit_link", locals: { group: group } %>
+      <% child_groups = group.children %>
+    <%# 個人アドレス帳 %>
+    <% else %>
+      <%#= render partial: "shared/address_groups/private_address/group_edit_link", locals: { group: group } %>
+      <%# 念のため既存ソースを引用 %>
+      <% child_groups = Gw::WebmailAddressGroup.find(:all, :conditions => {
+        :parent_id => group.id, :user_id => Core.user.id}, :order => "name, id") %>
+    <% end %>
+
+    <ul class="children level#{group.level_no}">
+      <%= render partial: "shared/address_groups/selectable_group", locals: { groups: child_groups } %>
+    </ul>
+  </li>
+<% end %>

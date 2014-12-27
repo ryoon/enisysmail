@@ -1,0 +1,19 @@
+<%
+
+@current = current
+def menu_link(auth, key, label, uri)
+  return '' unless Core.user.has_auth?(auth)
+  cls = [key.to_s]
+  cls << 'current' if @current == key
+  link_to(label, uri, :class => cls.join(' '))
+end
+
+%><div class="mainMenu">
+<%= menu_link   :manager , :maintenance, I18n.t('rumi.sys.menu.maintenance') , sys_maintenances_path
+%><%= menu_link :manager , :doc        , I18n.t('rumi.sys.menu.doc') , sys_docs_path
+%><%= menu_link :manager , :user       , I18n.t('rumi.sys.menu.switch_user') , sys_switch_users_path
+%><%= menu_link :manager , :language   , I18n.t('rumi.sys.menu.language') , sys_languages_path
+%><%= menu_link :manager , :address    , I18n.t( 'rumi.sys.menu.address' ) , sys_addresses_path
+%>
+<a onClick="window.close();">閉じる</a>
+</div>

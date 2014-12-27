@@ -1,0 +1,109 @@
+<% parent_group_id = Core.user_group.parent_id %>
+<% group_child_groups = build_select_parent_groups(Sys::Group.child_groups_to_select_option(parent_group_id)) %>
+<% no_limit_group_child_groups = build_select_parent_groups(
+     Sys::Group.child_groups_to_select_option(Sys::Group.no_limit_group_id)) %>
+
+<% affiliated_group_id = Core.user_group.id %>
+<% user_child_group = build_select_users(Sys::UsersGroup.affiliated_users_to_select_option(affiliated_group_id)) %>
+
+<table id="webmailContainer">
+  <tr>
+    <td id="webmailContent">
+      <div id="addressContent">
+        <div class="actionMenu">
+          <%= link_to :index, gw_webmail_public_address_books_path %>
+        </div>
+
+<%= form_for @book do |f| %>
+  <%= f.error_messages %>
+
+  <table class="show">
+    <tr>
+      <th><%= Gw::WebmailPublicAddressBook.human_attribute_name(:name) %></th>
+      <td><%= f.text_field :name, class: "name" %></td>
+    </tr>
+    <tr>
+      <th><%= Gw::WebmailPublicAddressBook.human_attribute_name(:state) %></th>
+      <td><%= f.radio_buttons(:state, Gw::WebmailPublicAddressBook.states, class: "states") %></td>
+    </tr>
+
+    <tr>
+      <th class="blueIndex">
+        <%= Gw::WebmailPublicAddressBook.human_attribute_name(:editable_groups_json) %>
+        <span style="color:red;">
+          <br>
+          <%= t("rumi.public_address_book.editable_groups_json.note") %>
+        </span>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          parent_group_selected: parent_group_id, child_groups: group_child_groups,
+          hidden_item_name: "gw_webmail_public_address_book[editable_groups_json]",
+          values: @book.editable_groups_json,
+          ui_mode: ui_mode_groups_include_no_limit
+        } %>
+      </td>
+    </tr>
+
+    <tr>
+      <th class="blueIndex">
+        <%= Gw::WebmailPublicAddressBook.human_attribute_name(:editable_users_json) %>
+        <span style="color:red;">
+          <br>
+          <%=raw t("rumi.public_address_book.editable_users_json.note") %>
+        </span>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          parent_group_selected: affiliated_group_id, child_groups: user_child_group,
+          hidden_item_name: "gw_webmail_public_address_book[editable_users_json]",
+          values: @book.editable_users_json,
+          ui_mode: ui_mode_users_default
+        } %>
+      </td>
+    </tr>
+
+    <tr>
+      <th class="blueIndex">
+        <%= Gw::WebmailPublicAddressBook.human_attribute_name(:readable_groups_json) %>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          parent_group_selected: Sys::Group.no_limit_group_id,
+          child_groups: no_limit_group_child_groups,
+          hidden_item_name: "gw_webmail_public_address_book[readable_groups_json]",
+          values: @book.readable_groups_json,
+          ui_mode: ui_mode_groups_include_no_limit
+        } %>
+      </td>
+    </tr>
+
+    <tr>
+      <th class="blueIndex">
+        <%= Gw::WebmailPublicAddressBook.human_attribute_name(:readable_users_json) %>
+        <span style="color:red;">
+          <br>
+          <%= t("rumi.public_address_book.readable_users_json.note") %>
+        </span>
+      </th>
+      <td>
+        <%= render partial: "shared/select_group", locals: {
+          parent_group_selected: affiliated_group_id, child_groups: user_child_group,
+          hidden_item_name: "gw_webmail_public_address_book[readable_users_json]",
+          values: @book.readable_users_json,
+          ui_mode: ui_mode_users_default
+        } %>
+      </td>
+    </tr>
+  </table>
+
+  <div class="submitters">
+    <%= f.submit %>
+  </div>
+
+<% end %>
+
+      </div>
+    </td>
+  </tr>
+</table>

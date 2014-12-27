@@ -1,0 +1,174 @@
+<script type="text/javascript">
+//<![CDATA[
+function getRequestStatus(xml) {
+  var statusNodes = xml.getElementsByTagName('status');
+  if (statusNodes.length > 0 && statusNodes[0].firstChild) {
+    return statusNodes[0].firstChild.nodeValue;
+  }
+  var errorNodes = xml.getElementsByTagName('error');
+  if (errorNodes.length > 0 && errorNodes[0].firstChild) {
+    return errorNodes[0].firstChild.nodeValue;
+  }
+  return '';
+}
+function clickSubmitButton(button) {
+  if(button.name == 'commit_destroy'){
+    var res = confirm('<%= I18n.t('rumi.new_mail.destroy.confirm') %>');
+    if(res == true ){
+      FreezeScreen('<%= I18n.t('rumi.new_mail.destroy.message') %>');
+    } else {
+      return false;
+    }
+  }
+  var elm = document.createElement('input');
+  elm.name = button.name;
+  elm.value = button.value;
+  elm.setAttribute('type', 'hidden');
+  $('item_form').appendChild(elm);
+  if (button.form.onsubmit()) {
+    button.form.submit();
+  }
+}
+function showServerResponseError() {
+  alert('サーバーの応答がありません。しばらく時間をおいて送信して下さい。');
+}
+function showTokenError() {
+  alert('ログイン状態がリセットされました。画面を閉じて再度ログインしてから送信して下さい。');
+}
+function getAuthenticityToken() {
+  var tokenNodes = $$('input[name="authenticity_token"]');
+  if (tokenNodes.length > 0) {
+    return tokenNodes[0].value;
+  }
+  return '';
+}
+function checkServerStatus(button) {
+  if(button.name == 'commit_send'){
+    var res = confirm('<%= I18n.t('rumi.new_mail.send.confirm') %>');
+    if(res == true ){
+      FreezeScreen('<%= I18n.t('rumi.new_mail.send.message') %>');
+    } else {
+      return false;
+    }
+  }
+  else if(button.name == 'commit_draft'){
+    var res = confirm('<%= I18n.t('rumi.new_mail.draft.confirm') %>');
+    if(res == true ){
+      FreezeScreen('<%= I18n.t('rumi.new_mail.draft.message') %>');
+    } else {
+      return false;
+    }
+  }
+  var uri = "<%=raw status_gw_webmail_mails_path %>.xml";
+  var token = getAuthenticityToken();
+  var myAjax = new Ajax.Request(uri, {
+    method: 'post',
+    parameters: {
+      authenticity_token: token
+    },
+    onSuccess: function(request) {
+      if (request.responseXML) {
+        var status = getRequestStatus(request.responseXML);
+        switch (status) {
+          case 'OK':
+            clickSubmitButton(button);
+            break;
+          case 'NG TokenError':
+          case '500 This is a secure page.':
+            showTokenError();
+            break;
+          default:
+            showServerResponseError();
+            break;
+        }
+      } else {
+        showServerResponseError();
+      }
+    },
+    onFailure: function(request) {
+      showServerResponseError();
+    }
+  });
+}
+   function FreezeScreen(msg) {
+      scroll(0,0);
+      var outerPane = document.getElementById('FreezePane');
+      var innerPane = document.getElementById('InnerFreezePane');
+      if (outerPane) {
+        outerPane.className = 'FreezePaneOn';
+        var h = Math.max.apply( null, [document.body.clientHeight ,
+                                       document.body.scrollHeight,
+                                       document.documentElement.scrollHeight,
+                                       document.documentElement.clientHeight] )  + 'px';
+        outerPane.style.height = h;
+      }
+      if (innerPane) innerPane.innerHTML = msg;
+   }
+//]]>
+</script>
+<div id="FreezePane" class="FreezePaneOff">
+   <div id="InnerFreezePane" class="InnerFreezePane"> </div>
+</div>
+<% if switch_account? %>
+  <div class="switch_account">
+    <%= I18n.t('rumi.account.message.switch') %><br />
+    <%= I18n.t('rumi.account.message.switch_note') %>
+  </div>
+<% end %>
+
+<div id="mailFormContainer">
+<table id="webmailContainer"><tr><td id="webmailContent"><div id="mailContent" style="padding: 0px 10px;">
+
+<%= form_for(:item, :html => {:style => "display: none;"}) do |f| %>
+<%= text_field_tag :original_to, @item.in_to %>
+<%= text_field_tag :original_cc, @item.in_cc %>
+<%= text_field_tag :original_bcc, @item.in_bcc %>
+<%= text_area_tag :original_subject, @item.in_subject %>
+<%= text_area_tag :original_body, @item.in_body %>
+<%= text_area_tag :original_html_body, @item.in_html_body %>
+<%= text_field_tag :original_format, @item.in_format %>
+<% end %>
+
+<%= error_messages_for "item" %>
+
+<%= form_for(:item, :url => {:action => @form_action, :id => params[:id]},
+  :html => {:id => "item_form", :method => @form_method, :multipart => true}) do |f| %>
+<%#= f.error_messages %>
+
+<% if false %>
+<%= hidden_field_tag :remain_draft, 1 %>
+<% end %>
+
+<div class="mailFormMenu">
+  <div class="mailSubmitters" style="float: left;">
+    <div class="submitters">
+      <%= tag :input, :type => 'button', :value => "送信する", :id => "commit_send1", :name => "commit_send", :class => "send", :onclick => "checkServerStatus(this); return false;" %>
+      <%= tag :input, :type => 'button', :value => "下書き保存", :id => "commit_draft1", :name => "commit_draft", :class => "draft", :onclick => "checkServerStatus(this); return false;" %>
+      <%= tag :input, :type => 'button', :value => "破棄する", :id => "commit_destroy1", :name => "commit_destroy", :class => "destroy", :onclick => "clickSubmitButton(this); return false;" %>
+    </div>
+  </div>
+</div>
+
+<div>
+<%= render :partial => 'form', :locals => {:f => f} %>
+</div>
+
+<div class="mailSubmitters">
+  <div class="submitters">
+    <%= tag :input, :type => 'button', :value => "送信する", :id => "commit_send2", :name => "commit_send", :class => "send", :onclick => "checkServerStatus(this); return false;" %>
+    <%= tag :input, :type => 'button', :value => "下書き保存", :id => "commit_draft2", :name => "commit_draft", :class => "draft", :onclick => "checkServerStatus(this); return false;" %>
+    <%= tag :input, :type => 'button', :value => "破棄する", :id => "commit_destroy2", :name => "commit_destroy", :class => "destroy", :onclick => "clickSubmitButton(this); return false;" %>
+  </div>
+</div>
+
+<% end %>
+
+<%= form_tag '/_admin/sso', :method => :post, :name => 'scheduleForm', :target => "scheduleWindow_#{Core.now.gsub(/[\W]/, '')}", :style => 'display:none;' do %>
+  <%= hidden_field_tag :to, 'gw' %>
+  <%= hidden_field_tag :path, '/gw/schedules/new', :id => 'schedule_path' %>
+  <%= hidden_field_tag 'item[title]', '', :id => 'schedule_title'  %>
+  <%= hidden_field_tag 'item[memo]', '', :id => 'schedule_memo'  %>
+<% end %>
+
+</div><!-- end #webmailContainer --></td></table>
+<!-- end #mailFormContainer --></div>
