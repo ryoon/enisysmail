@@ -44,6 +44,9 @@ rumi.attachment = function(elem_id, maxsize, maxname) {
     }
 
     var form_data = new FormData();
+    form_data.append('authenticity_token',
+             jQuery('meta[name="csrf-token"]').attr('content'));
+
     form_data.append('dnd_tmp_id', jQuery('#item_tmp_id').val());
 
     var totalsize = 0;
@@ -242,6 +245,17 @@ rumi.preview.prototype.open = function() {
     data: obj.mail_id
   }).success(function(e) {
     preview_open(e.id, e.html);
+    jQuery('div.mailbox').html(e.tree);
+    var noread = e.noread;
+    if (noread != null) {
+      if (noread == '0') {
+        noread = '';
+      } else {
+        noread = e.noread;
+      }
+      jQuery("img[alt='メール'][src$='ic_mailer.gif']")
+	     .parent().prev("span.noRead").html(noread);
+    }
   }).error(function(e) {
     alert("メールの取得に失敗しました。");
     show_label(this.data);

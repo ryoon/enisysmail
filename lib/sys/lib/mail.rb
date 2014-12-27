@@ -407,11 +407,11 @@ private
   
   def referenced_body_for_forward(format = :text)
     om = "----------------------- Original Message -----------------------\n"
-    om << " From:    #{friendly_from_addr}\n"
-    om << " To:      #{friendly_to_addrs.join(', ')}\n"
-    om << " Cc:      #{friendly_cc_addrs.join(', ')}\n" if friendly_cc_addrs.size > 0
-    om << " Date:    #{date('%Y-%m-%d %H:%M:%S')}\n"
-    om << " Subject: #{subject}\n"
+    om << " タイトル: #{subject}\n"
+    om << " 送信日時: #{date('%Y-%m-%d %H:%M:%S')}\n"
+    om << " 送信者:　 #{friendly_from_addr}\n"
+    om << " 宛先:　　 #{friendly_to_addrs.join(', ')}\n"
+    om << " ＣＣ:　　 #{friendly_cc_addrs.join(', ')}\n" if friendly_cc_addrs.size > 0
     om << "----\n\n"
     ome= "\n--------------------- Original Message Ends --------------------"
     

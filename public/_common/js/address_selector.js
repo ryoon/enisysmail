@@ -48,7 +48,7 @@ AddressSelector.prototype.toggle = function(prefix, to_addr, cc_addr, bcc_addr, 
     } else {
       var myAjax = new Ajax.Request(this.parseAddressURI, {
         method: 'post',
-        parameters: {to: to_addr, cc: cc_addr, bcc: bcc_addr},
+        parameters: {to: to_addr, cc: cc_addr, bcc: bcc_addr, authenticity_token: jQuery('meta[name="csrf-token"]').attr('content')},
         onSuccess: function(request){
           showSelector();
         },
@@ -74,7 +74,7 @@ AddressSelector.prototype.changeBook = function(prefix) {
   if (!addrElm.visible()) addrElm.show();
   selectElm = $(prefix + 'AddressSearchFieldColumn');
   if (!selectElm.visible()) selectElm.show();
-  this._addressBook = prefix;  
+  this._addressBook = prefix;
 };
 AddressSelector.prototype.currentBook = function() {
   if($('addressSelector').visible()) {
@@ -180,7 +180,7 @@ AddressSelector.prototype.loadItems = function(prefix, gid, opt, book_id) {
     if (search || gid == 0) {
       uri = this.priAddressesURI + ".xml";
     } else {
-      uri = this.priAddressesURI + "/" + gid + "/child_items.xml";  
+      uri = this.priAddressesURI + "/" + gid + "/child_items.xml";
     }
     break;
   case 'public':
@@ -350,7 +350,7 @@ AddressSelector.prototype.makeAddressElement = function(prefix, gid, id, name, e
   }
   var nameValue = name;
   if (group != null) nameValue += " （" + group + "）";
-  var html = '';  
+  var html = '';
   html += '<a href="#" class="toggleItems" style="visibility:hidden;">+</a> ';
   html += '<input type="checkbox" id="' + checkId + '" class="check" value="' + checkValue + '" onclick="AddressSelector.instance.checked(this)">';
   html += '<a href="#" class="itemName addressName" title="' + escape_html(email) + '" onclick="AddressSelector.instance.toggleCheckbox(\'' + checkId + '\');return false;">' + nameValue.escapeHTML() + '</a>';
@@ -376,7 +376,7 @@ AddressSelector.prototype.showSearchGroup = function(request, prefix) {
 };
 AddressSelector.prototype.removeSearchGroup = function(prefix) {
   var rsltElm = $(prefix + 'GroupSearch');
-  if (rsltElm) rsltElm.parentNode.removeChild(rsltElm);  
+  if (rsltElm) rsltElm.parentNode.removeChild(rsltElm);
 };
 AddressSelector.prototype.search = function() {
   var prefix = this._addressBook;
@@ -454,7 +454,7 @@ AddressSelector.prototype.clearCheckboxes = function() {
   for (var i = 0;i < prefixes.length;i++) {
     var inputs = $(prefixes[i] + 'Addresses').getElementsByTagName('input');
     for (var k = 0;k < inputs.length;k++) {
-      if (inputs[k].type == 'checkbox') inputs[k].checked = false; 
+      if (inputs[k].type == 'checkbox') inputs[k].checked = false;
     }
   }
 };
@@ -491,7 +491,7 @@ AddressSelector.prototype.checked = function(checkElm) {
       if (inputs[i].type != 'checkbox') continue;
       var mt = inputs[i].id.match(checkIdPattern);
       if (!mt || mt[2] == '0' || mt[3] != gid) continue;
-      inputs[i].checked = checkElm.checked; 
+      inputs[i].checked = checkElm.checked;
     }
   } else {
     if (checkElm.checked) return;

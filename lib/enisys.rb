@@ -40,7 +40,26 @@ module Enisys
     $enisys_config ||= {}
     Enisys::Config
   end
-  
+
+  def self.ie11_regexp
+    /(Trident).*rv:(\d+)\.(\d*)/
+  end
+
+  def self.ie?(val)
+    case val
+    when String
+      str = val
+    when ActionDispatch::Request
+      str = val.user_agent
+    else
+      return false
+    end
+    return true if (str.index(/MSIE/) || str.index(ie11_regexp))
+    return false
+  rescue
+    return false
+  end
+
   class Enisys::Config
     def self.application
       config = Enisys.default_config["application"]

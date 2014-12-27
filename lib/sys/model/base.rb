@@ -39,6 +39,6 @@ module Sys::Model::Base
     
     self.class.connection.execute(sql)
     rs = self.class.connection.execute("SELECT LAST_INSERT_ID() AS id FROM #{table}")
-    return rs.fetch_row[0]
+    return rs.first
   end
 end

@@ -1,4 +1,4 @@
-require 'digest/md5'
+require 'digest'
 class Sys::File < ActiveRecord::Base
   include Sys::Model::Base
   include Sys::Model::Base::File

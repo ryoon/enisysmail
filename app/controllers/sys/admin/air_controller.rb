@@ -47,7 +47,7 @@ class Sys::Admin::AirController < ApplicationController
       c.and :air_login_id, 'LIKE', "#{token} %"
     end
     user = Sys::User.find(:first, :conditions => cond.where)
-    return render(:text => "ログインに失敗しました。") unless user
+    return render(action: :login_failed) unless user
     
     token, enc_password = user.air_login_id.split(/ /)
     
@@ -60,6 +60,7 @@ class Sys::Admin::AirController < ApplicationController
     Sys::Session.delete_past_sessions_at_random
     
     if request.get?
+      redirect_to Enisys::Config.application["gw.root_url"] and return if params[:path_info]=="/_admin/login"
       redirect_to @admin_uri
     end
   end

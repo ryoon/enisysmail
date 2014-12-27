@@ -6,7 +6,7 @@
     <td><%= f.radio_buttons :state, @item.states, :class => 'status' %></td>
   </tr><tr>
     <th><%= @item.locale(:published_at) %></th>
-    <td><%= f.text_field(:published_at, :class => 'datetime pulished_at').gsub(' +0900', '') %></td>
+    <td><%= f.text_field(:published_at, :class => 'datetime pulished_at') %></td>
   </tr><tr>
     <th><%= @item.locale(:title) %></th>
     <td><%= f.text_field :title, :class => 'string title' %></td>

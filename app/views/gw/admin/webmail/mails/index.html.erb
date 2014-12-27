@@ -17,10 +17,15 @@ function post(action) {
   form.submit();
   return false;
 }
-function delete_mails() {
+function trash_mails() {
   //if (confirm('削除してよろしいですか？')) post('<%= raw delete_gw_webmail_mails_path(@mailbox.name) %>');
   post('<%=raw escape_javascript delete_gw_webmail_mails_path(@mailbox.name) %>');
   return false;
+}
+function delete_mails() {
+  if (confirm('<%= t("rumi.operation.destroy.confirm") %>')) {
+    post('<%=raw escape_javascript delete_gw_webmail_mails_path(@mailbox.name, real: true) %>');
+  }
 }
 function move_mails() {
   return post('<%=raw escape_javascript move_gw_webmail_mails_path(@mailbox.name) %>');
@@ -141,7 +146,8 @@ function showPopupMenu(btn, id) {
   <div class="leftMenu" style="position:relative;">
     <a href="#" onclick="return move_mails();" class="move" title="移動">移動</a
     ><a href="#" onclick="return copy_mails();" class="copy" title="コピー">コピー</a
-    ><a href="#" onclick="return delete_mails();" class="delete" title="削除">削除</a>
+    ><%= '<a href="#" onclick="return trash_mails();" class="trash" title="ごみ箱に移動">ごみ箱に移動</a>'.html_safe unless @mailbox.trash_box?
+    %><a href="#" onclick="return delete_mails();" class="delete" title="削除">削除</a>
     <a href="#" onclick="return seen_mails();" class="seen" title="既読にする">既読にする</a
     ><a href="#" onclick="return unseen_mails();" class="unseen" title="未読にする">未読にする</a
     ><a href="#" id="labelLink" onclick="return showPopupMenu(this, 'labelMenu');" class="label" title="ラベル">ラベル</a

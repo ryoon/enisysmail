@@ -276,8 +276,8 @@ class Gw::WebmailMail
     return items if uids.blank?
     
     uids = [uids] if uids.class == Fixnum
-#    use_cache = options[:use_cache] || true
-    use_cache = false
+    use_cache = options[:use_cache] || true
+#    use_cache = false
     
     imap.examine(mailbox)
     
@@ -504,7 +504,7 @@ protected
 private
   def create_mail
     Mail.new do |mail|
-      mail['X-Mailer'] = "Matsue Ruby GW ENISYS"
+      mail['X-Mailer'] = "MATSUE Ruby GW ENISYS"
       mail['Message-ID'] = "#{SecureRandom.uuid}@#{Core.config['mail_domain']}"
     end
   end

@@ -15,7 +15,25 @@ module Gw::MailHelper
     uri = escape_javascript(uri)
     "openMailForm('#{uri}', '#{mail_form_style}');return false;"
   end
-  
+
+  def open_gwcircular_form(uri)
+    uri = escape_javascript(uri)
+    "openGwcircularForm('#{uri}', '#{gwcircular_form_style}');"
+  end
+
+  def gwcircular_form_style
+    "resizable=yes,scrollbars=yes"
+  end
+
+  def open_gwbbs_form(uri)
+    uri = escape_javascript(uri)
+    "openGwbbsForm('#{uri}', '#{gwbbs_form_style}');"
+  end
+
+  def gwbbs_form_style
+    "resizable=yes,scrollbars=yes"
+  end
+
   def mail_form_size(size_name)
     rtn = {
       'small'  => {:window => 800, :container => 770, :textarea => 675 },
@@ -33,7 +51,7 @@ module Gw::MailHelper
     
     text = "#{text}".force_encoding('utf-8')
     text = text.gsub(/\t/, "  ")
-    text = text_wrap(text, col, "\t") unless request.env['HTTP_USER_AGENT'] =~ /MSIE/
+    text = text_wrap(text, col, "\t") unless Enisys.ie?(request.env['HTTP_USER_AGENT'])
     if options[:auto_link]
       text = mail_text_autolink(text)
       text = to_nbsp.call(text)
@@ -174,7 +192,8 @@ module Gw::MailHelper
       /(Firefox)\/(\d+)\.(\d*)/,
       /(?=.*(Opera)[\s|\/])(?=.*Version\/(\d+)\.(\d*))/,
       /(Chrome)\/(\d+)\.(\d*)/,
-      /(?=.*(Safari)\/)(?=.*Version\/(\d+)\.(\d*))/
+      /(?=.*(Safari)\/)(?=.*Version\/(\d+)\.(\d*))/,
+      Enisys.ie11_regexp
     ].each do |regexp|
       if user_agent =~ regexp
         return $1, $2.to_i, $3.to_i
@@ -188,7 +207,7 @@ module Gw::MailHelper
     agent, version, subversion = user_agent_info(request.user_agent)
     
     case agent
-    when 'MSIE'
+    when 'MSIE', 'Trident'
       if version < 8
         limit_size = 0
       elsif version == 8
@@ -215,8 +234,10 @@ module Gw::MailHelper
   
   def thumbnail_for_embed(at, options)
     limit_size = data_uri_scheme_limit_size
-    
-    if limit_size > 0 && thumbnail = at.thumbnail(:width => options[:width] || 128, :height => options[:height] || 96, :format => :JPEG, :quality => 70)
+    if limit_size > 0 &&
+        thumbnail = at.thumbnail(:width => options[:width] || 128,
+                                 :height => options[:height] || 96,
+                                 :quality => 70)
       thumbnail = Base64.encode64(thumbnail)
       if thumbnail.length <= limit_size
         return thumbnail

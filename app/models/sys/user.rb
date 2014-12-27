@@ -189,15 +189,34 @@ class Sys::User < Sys::ManageDatabase
   # ==== 戻り値
   #  5: システム管理者, 2: 一般ユーザー
   def auth_no
-    auth = Sys::User.find_by_sql([<<-SQL, user_id: Core.user.id])
-    SELECT *
-    FROM system_users
-    INNER JOIN system_roles ON system_users.id = system_roles.uid
-    WHERE system_users.id         = :user_id AND
-          system_roles.priv_name  = 'admin'  AND
-          system_roles.table_name IN ('_admin', 'mail_admin')
+    cond = ["user_id = ?", Core.user.id]
+    user_groups = Sys::UsersGroup.without_disable.where(cond)
+    groups = ""
+    user_groups.each do |ug|
+      groups << "," unless groups.blank?
+      groups << ug.group_id.to_s
+    end
+
+    if groups.present?
+      childs = Sys::Group.without_disable.where("id in (#{groups})")
+      childs.each do |child|
+        groups << "," unless groups.blank?
+        groups << child.parent_id.to_s
+      end
+    end
+
+    auth_users = Sys::User.find_by_sql([<<-SQL, user_id: Core.user.id])
+    SELECT * FROM system_users INNER JOIN system_roles ON system_users.id = system_roles.uid
+    WHERE system_users.id = :user_id AND system_roles.priv_name = 'admin'  AND system_roles.table_name IN ('_admin', 'mail_admin')
     SQL
-    return auth.present? ? 5 : 2
+
+    auth_groups = Sys::Group.find_by_sql([<<-SQL])
+    SELECT * FROM system_roles
+    WHERE system_roles.uid in (#{groups}) AND system_roles.priv_name  = 'admin'  AND system_roles.table_name IN ('_admin', 'mail_admin')
+    SQL
+
+    auth = auth_users.present? || auth_groups.present?
+    return auth ? 5 : 2
   end
 
   def has_priv?(action, options = {})

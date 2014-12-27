@@ -15,10 +15,12 @@ Enisys::Application.routes.draw do
                    :status, :dnd_upload, :move_folder
             end
             member do
-              get :edit, :answer, :forward, :resend
-              post :edit, :answer, :forward, :send_mdn, :mobile_send
+              get :edit, :answer, :forward, :resend, :gwbbs_forward, :gwcircular_forward
+              post :edit, :answer, :forward, :send_mdn, :mobile_send, :gwbbs_forward, :gwcircular_forward
             end
           end
+        match "webmail/*mailbox/mails/gw_forward" =>
+          "webmail/mails#gw_forward", :via => :post
         match "webmail/*mailbox/mails/new" => 
           "webmail/mails#new", :via => :post
         resources "webmail_mailboxes",

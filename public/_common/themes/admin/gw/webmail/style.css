@@ -524,11 +524,14 @@ form.search td input.email {
 }
 #webmailContent .menu a.edit,
 #webmailContent .menu a.delete,
+#webmailContent .menu a.trash,
 #webmailContent .menu a.move,
 #webmailContent .menu a.copy,
 #webmailContent .menu a.answer,
 #webmailContent .menu a.answerAll,
 #webmailContent .menu a.forward,
+#webmailContent .menu a.gwcircular_forward,
+#webmailContent .menu a.gwbbs_forward,
 #webmailContent .menu a.etc,
 #webmailContent .menu a.print,
 #webmailContent .menu a.seen,
@@ -576,6 +579,10 @@ form.search td input.email {
   width: 52px;
   background-image: url(../images/bt/bt_m_del.gif);
 }
+#webmailContent .menu a.trash {
+  width: 99px;
+  background-image: url(../images/bt/bt_m_trash.png);
+}
 #webmailContent .menu a.move {
   width: 52px;
   background-image: url(../images/bt/bt_m_move.gif);
@@ -608,6 +615,14 @@ form.search td input.email {
   width: 52px;
   background-image: url(../images/bt/bt_m_forward.gif);
 }
+#webmailContent .menu a.gwcircular_forward {
+  width: 97px;
+  background-image: url(../images/bt/bt_m_gwcircular_forward.png);
+}
+#webmailContent .menu a.gwbbs_forward {
+  width: 97px;
+  background-image: url(../images/bt/bt_m_gwbbs_forward.png);
+}
 #webmailContent .menu a.label {
   width: 61px;
   background-image: url(../images/bt/bt_m_label.gif);
@@ -625,6 +640,10 @@ form.search td input.email {
   background-image: url(../images/bt/bt_m_search.gif);
 }
 #webmailContent .menu a:hover {
+  background-position: 0 -27px;
+  color: #d00;
+}
+#webmailContent .menu input:hover {
   background-position: 0 -27px;
   color: #d00;
 }

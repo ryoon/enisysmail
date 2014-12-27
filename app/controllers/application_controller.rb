@@ -105,7 +105,7 @@ class ApplicationController < ActionController::Base
     when request.env['HTTP_USER_AGENT'] =~ /(MSIE 6|MSIE 7)/
       filename = NKF.nkf("-s", filename)
       filename = filename.chars.map{|c| c.unpack("C*").last == 92 ? URI::escape(NKF.nkf("-w", c)) : c.to_s}.join
-    when request.env['HTTP_USER_AGENT'] =~ /MSIE/ 
+    when Enisys.ie?(request.env['HTTP_USER_AGENT'])
       filename = URI::escape(filename)
     end
     filename

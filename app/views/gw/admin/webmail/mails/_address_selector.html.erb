@@ -2,6 +2,7 @@
 sys_search_field_options = [['名前', 's_name_or_kana'], ['メールアドレス', 's_email']]
 pri_search_field_options = [['名前', 's_name_or_kana'], ['メールアドレス', 's_email']]
 public_search_field_options = [['名前', 'name'], ['メールアドレス', 'email']]
+core_user = Core.user
 %>
 <%= javascript_include_tag "/_common/js/address_selector.js" %>
 <div id="addressSelector" style="display: none;">
@@ -26,6 +27,17 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
           <%= link_to '検索', '#', :class => "action", :onclick => "AddressSelector.instance.search();return false;" %>
           <%= link_to 'リセット', '#', :class => "action", :onclick => "AddressSelector.instance.resetSearchResult();return false;" %>
         </td>
+        <td>
+          <div class="submitters">
+            <span style="float:right;color:#f00;">※送信先を確定するには、「OK」ボタンをクリックしてください。</span><br />
+            <span style="float:right;">
+            <%= link_to 'OK', '#', :class => "action", :title => 'OK',
+              :onclick => "AddressSelector.instance.finishSelection(true);return false;" %>
+            <%= link_to 'キャンセル', '#', :class => "action", :title => 'キャンセル',
+              :onclick => "AddressSelector.instance.finishSelection(false);return false;" %>
+            </span>
+          </div>
+        </td>
       </tr>
     </table>
     <div id="addressesSearchNotice" class="addressesSearchNotice" style="display:none">
@@ -39,7 +51,7 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
 
         <div id="sysAddresses" class="addresses" style="display:none">
           <ul id="sysAddressesRoot">
-            <% Core.user.user_groups.includes(:group).order("system_users_groups.job_order", "system_groups.sort_no").without_disable.without_option_groups.each do |ug| %>
+            <% core_user.user_groups.includes(:group).order("system_users_groups.job_order", "system_groups.sort_no").without_disable.without_option_groups.each do |ug| %>
             <% g = ug.group %>
             <li class="group" id="sysGroup<%= g.id %>_mine">
             <% if g.present? %>
@@ -52,9 +64,7 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
               :onclick => "AddressSelector.instance.loadItems('sys', '#{g.id}_mine', {'close':false, 'sys_my_group':true});return false;" %>
             </li>
             <% end %>
-            <% Sys::Group.find(:all,
-                               :conditions => {:parent_id => 1, :state => 'enabled', :category => 0},
-                               :order => :sort_no).each do |g| %>
+            <% Sys::Group.where({:parent_id => 1, :state => 'enabled', :category => 0}).includes(:enabled_children).order(:sort_no).each do |g| %>
             <li class="group" id="sysGroup<%= g.id %>">
             <% if g.enabled_children.length > 0 %>
               <%= link_to '+', '#', :id => "sysToggleItems#{g.id}", :class => "toggleItems toggleItemsClose",
@@ -96,8 +106,11 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
           </ul>
         </div>
 
+        <% readable_public_address_ids = Gw::WebmailPublicAddress.extract_readable(core_user).map(&:id) %>
+        <% parent_group_ids = Gw::WebmailPublicAddressGroup.select(:parent_id).where("parent_id IS NOT NULL").uniq.map(&:id) %>
+
         <div id="publicAddresses" class="addresses" style="display:none">
-          <% Gw::WebmailPublicAddressBook.extract_readable(Core.user).each do |book| %>
+          <% Gw::WebmailPublicAddressBook.extract_readable(core_user).includes([:addresses, {groups: :addresses}]).each do |book| %>
           <ul id="publicAddressesRoot">
 
             <li class="group">
@@ -108,7 +121,7 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
 
               <ul class="children" id="publicBook<%= book.id %>">
                 <li class="group" id="publicGroup<%= book.id %>_0">
-                  <% if !book.addresses.extract_readable(Core.user).size.zero? %>
+                  <% unless (book.addresses.map(&:id) & readable_public_address_ids).empty? %>
                     <%= link_to '+', '#', id: "publicToggleItems#{book.id}_0", class: "toggleItems toggleItemsClose",
                       onclick: "AddressSelector.instance.loadItems('public', '0', {}, '#{book.id}');return false" %>
                   <% else %>
@@ -118,19 +131,19 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
                     onclick: "AddressSelector.instance.loadItems('public', '0', {}, '#{book.id}');return false;" %>
                 </li>
 
-                <% book.root_groups.each do |g| %>
-                <li class="group" id="publicGroup<%= book.id %>_<%= g.id %>">
-                <% if !g.children.count.zero? || !g.addresses.extract_readable(Core.user).size.zero? %>
-                  <%= link_to '+', '#', id: "publicToggleItems#{book.id}_#{g.id}", class: "toggleItems toggleItemsClose",
-                    onclick: "AddressSelector.instance.loadItems('public', '#{g.id}', {}, '#{book.id}');return false" %>
-                <% else %>
-                  <%= link_to '+', '#', class: "toggleItems", style: "visibility:hidden;" %>
+                <% book.groups.each do |g| %>
+                  <% next unless g.parent_id.nil? %>
+                  <li class="group" id="publicGroup<%= book.id %>_<%= g.id %>">
+                    <% if parent_group_ids.include?(g.id) || !(g.addresses.map(&:id) & readable_public_address_ids).empty? %>
+                      <%= link_to '+', '#', id: "publicToggleItems#{book.id}_#{g.id}", class: "toggleItems toggleItemsClose",
+                          onclick: "AddressSelector.instance.loadItems('public', '#{g.id}', {}, '#{book.id}');return false" %>
+                    <% else %>
+                      <%= link_to '+', '#', class: "toggleItems", style: "visibility:hidden;" %>
+                    <% end %>
+                    <%= link_to g.name, "#", class: "itemName groupName",
+                        onclick: "AddressSelector.instance.loadItems('public', '#{g.id}', {}, '#{book.id}');return false;" %>
+                  </li>
                 <% end %>
-                <%= link_to g.name, "#", class: "itemName groupName",
-                  onclick: "AddressSelector.instance.loadItems('public', '#{g.id}', {}, '#{book.id}');return false;" %>
-                </li>
-                <% end %>
-
               </ul>
             </li>
           </ul>
@@ -165,14 +178,6 @@ public_search_field_options = [['名前', 'name'], ['メールアドレス', 'em
     </tr>
   </table>
 
-  <div class="submitters">
-    <span style="float:left;color:#f00;">※選択内容を確定するには、「OK」ボタンをクリックしてください。</span>
-    <%= link_to 'OK', '#', :class => "action", :title => 'OK',
-      :onclick => "AddressSelector.instance.finishSelection(true);return false;" %>
-    <%= link_to 'キャンセル', '#', :class => "action", :title => 'キャンセル',
-      :onclick => "AddressSelector.instance.finishSelection(false);return false;" %>
-  </div>
-
 </div>
 <script type="text/javascript">
 //<![CDATA[
@@ -182,11 +187,16 @@ AddressSelector.instance.priAddressesURI = '<%= gw_webmail_address_groups_path %
 AddressSelector.instance.publicAddressesURI = '<%= gw_webmail_public_address_groups_path %>';
 AddressSelector.instance.publicAllAddressesURI = '<%= search_address_gw_webmail_public_address_books_path %>';
 
-Event.observe($('addressSearchKeyword'), 'keypress', function(event) {
-  if (event.keyCode == 13) {
-    AddressSelector.instance.search();
-    Event.stop(event);
-  }
-}, false);
+jQuery(document).ready(function(e) {
+  var keyword_input = jQuery(rumi.ui.idSelector("addressSearchKeyword"));
+  keyword_input.keypress(function(event) {
+    console.log("keypress", event.keyCode);
+    if (event.keyCode == 13) {
+      AddressSelector.instance.search();
+      return false;
+    }
+  });
+});
+
 //]]>
 </script>

@@ -1,4 +1,4 @@
-## Enisys Mail 1.0.0 インストールマニュアル                 2014.05.30
+## Enisys Mail 1.1.0 インストールマニュアル                 2014.08.22
 
 **********************************************************************
  1 想定環境
@@ -83,7 +83,7 @@ rootユーザに変更します。
 Enisys Mailソースコードを設置します。
 
   # mkdir /var/share
-  # tar xvzf enisysmail-1.0.0.tar.gz -C /var/share
+  # tar xvzf enisysmail-1.1.0.tar.gz -C /var/share
   # chown -R apache:apache /var/share/enisysmail
 
 **********************************************************************

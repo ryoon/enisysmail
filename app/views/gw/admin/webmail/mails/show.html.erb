@@ -129,6 +129,30 @@ function answerWithView(uri) {
   return false;
 }
 
+function gwcircularforwardView(uri) {
+  var view = $('currentMailView');
+  if (uri.indexOf('?') < 0) {
+    uri += '?';
+  } else {
+    uri += '&';
+  }
+  uri += view.name + "=" + view.value;
+  openGwcircularForm(uri, '<%=raw gwcircular_form_style %>');
+  return false;
+}
+
+function gwbbsforwardView(uri) {
+  var view = $('currentMailView');
+  if (uri.indexOf('?') < 0) {
+    uri += '?';
+  } else {
+    uri += '&';
+  }
+  uri += view.name + "=" + view.value;
+  openGwbbsForm(uri, '<%=raw gwbbs_form_style %>');
+  return false;
+}
+
 function addAddress(address,name) {
   var uri = "<%= gw_webmail_addresses_path(:format => 'xml') %>";
   var myAjax = new Ajax.Request(uri, {
@@ -297,7 +321,8 @@ function openScheduleWindow() {
       <span class="separator">|</span
       ><% end %><%= link_to "編集", '#', :class => 'edit', :title => "編集", :target => '_blank',
         :onclick => "return answerWithView('#{raw escape_javascript resend_gw_webmail_mail_path(@mailbox.name, @item.uid)}');"
-      %><%= link_to "削除", url_for(:action => :destroy, :new_window => @new_window), :method => :delete, :class => :delete, :title => "削除"
+      %><%= link_to "ごみ箱に移動", url_for(action: :destroy), method: :delete, class: :trash, title: "ごみ箱に移動"
+      %><%= link_to "削除", url_for(action: :destroy, real: true), confirm: t('rumi.operation.destroy.confirm'), method: :delete, class: :delete, title: "削除"
       %><span class="separator">|</span
       ><%= link_to "ラベル", '#', :id => 'labelLinkBody', :class => 'label', :title => 'ラベル',
         :onclick => "return showPopupMenu(this, 'labelMenuBody');"
@@ -311,11 +336,16 @@ function openScheduleWindow() {
         :onclick => "return showPopupMenu(this, 'answerMenuBody');"
       %><%= link_to "転送", '#', :class => 'forward', :title => "転送", :target => '_blank',
         :onclick => "return answerWithView('#{raw escape_javascript forward_gw_webmail_mail_path(@mailbox.name, @item.uid)}');"
+      %><%= link_to "転送（回覧板）", url_for(action: :gwcircular_forward), :class => 'gwcircular_forward', :title => "転送（回覧板）", :target => '_blank',
+        :onclick => "return gwcircularforwardView('#{raw escape_javascript url_for(action: :gwcircular_forward)}');"
+      %><%= link_to "転送（掲示板）", url_for(action: :gwbbs_forward), :class => 'gwbbs_forward', :title => "転送（掲示板）", :target => '_blank',
+        :onclick => "return gwbbsforwardView('#{raw escape_javascript url_for(action: :gwbbs_forward)}');"
       %><%= link_to "編集", '#', :class => 'edit', :title => "編集", :target => '_blank',
         :onclick => "return answerWithView('#{raw escape_javascript resend_gw_webmail_mail_path(@mailbox.name, @item.uid)}');" if @mailbox.name =~ /^Sent(\.|$)/
       %><%= link_to "移動", "#", :onclick => "$('mail').submit(); return false;", :class => 'move', :title => "移動"
       %><%= link_to "コピー", "#void", :onclick => "copyMail(); return false;", :class => 'copy', :title => "コピー"
-      %><%= link_to "削除", url_for(:action => :destroy, :new_window => @new_window), :method => :delete, :class => :delete, :title => "削除"
+      %><%= link_to("ごみ箱に移動", url_for(action: :destroy), method: :delete, class: :trash, title: "ごみ箱に移動") unless @mailbox.trash_box?
+      %><%= link_to "削除", url_for(action: :destroy, real: true), confirm: t('rumi.operation.destroy.confirm'), method: :delete, class: :delete, title: "削除"
       %><span class="separator">|</span
       ><%= link_to "ラベル", '#', :id => 'labelLinkBody', :class => 'label', :title => 'ラベル',
         :onclick => "return showPopupMenu(this, 'labelMenuBody');"
@@ -512,7 +542,7 @@ function openScheduleWindow() {
       <% if ((inline.alternative? && !inline.html_body.blank?) || inline.content_type == "text/html") %>
         <div id="textBody_<%= inline.seqno %>" class="autoWrap mailBodyText" style="display:none;"><%= mail_text_wrap(inline.text_body, 10, :auto_link => true) %></div>
         <div id="htmlPreview_<%= inline.seqno %>" class="mailBodyText" style="display:none;"></div>
-        <input type="hidden" id="htmlBody_<%= inline.seqno %>" value="<%=h mail_html_autolink(inline.html_body) %>" />
+        <input type="hidden" id="htmlBody_<%= inline.seqno %>" value="<%=h inline.html_body %>" />
       <% else %>
         <div id="textBody_<%= inline.seqno %>" class="autoWrap mailBodyText"><%= mail_text_wrap(inline.text_body, 10, :auto_link => true) %></div>
       <% end %>

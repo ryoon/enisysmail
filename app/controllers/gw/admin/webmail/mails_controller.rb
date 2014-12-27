@@ -2,8 +2,14 @@
 class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
   include Sys::Controller::Scaffold::Base
   include Gw::Controller::Admin::Mobile::Mail
+  include RumiHelper
   helper Gw::MailHelper
   layout :select_layout
+  require 'base64'
+  require 'zlib'
+
+  rescue_from ActionController::InvalidAuthenticityToken, :with => :invalidtoken
+  protect_from_forgery :except => [:gw_forward]
 
   def logging_action
     remote_ip = request.env["HTTP_X_FORWARDED_FOR"] || request.remote_ip
@@ -16,6 +22,10 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
   end
   
   def pre_dispatch
+    if params[:opt_id]
+      Core.current_user = Core.user
+      session.delete(:current_account)
+    end
     if params[:action] == 'status' || params[:action] == 'mail_check'
       return
     end
@@ -144,7 +154,7 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     if params[:download] == "eml"
       filename = @item.subject + ".eml"
       filename = filename.gsub(/[\/\<\>\|:"\?\*\\]/, '_') 
-      filename = URI::escape(filename) if request.env['HTTP_USER_AGENT'] =~ /MSIE/
+      filename = URI::escape(filename) if Enisys.ie?(request.env['HTTP_USER_AGENT'])
       msg = @item.rfc822 || @item.mail.to_s
       return send_data(msg, :filename => filename,
         :type => 'message/rfc822', :disposition => 'attachment')
@@ -213,20 +223,36 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     end
     
     @mailboxes  = load_mailboxes
-    
     filter = make_search_filter
-    
     @s_params = make_search_params
     
     cond        = { :select => @mailbox.name, :conditions => filter, :sort => @sort, :sort_starred => params[:sort_starred] }
     @pagination = @item.single_pagination(params[:id], cond)
     
     @addr_histories = load_address_histories(@mail_address_history) if @mail_address_history != 0
-    
 
     if request.xhr?
       html = render_to_string(template: 'gw/admin/webmail/mails/show.html.erb', layout: false)
-      return render json: {id: params[:id], html: html}
+      if Core.current_user.id == Core.user.id
+        noread_cnt = @mailboxes.inject(0) do |cnt, box|
+          unless box.name =~ /^(Sent|Drafts|Trash|Star)(\.|$)/
+            cnt += Gw::WebmailMail.find(:all,
+                                        select: box.name,
+                                        conditions: "UNSEEN").size
+          else
+            cnt
+          end
+        end
+      else
+        noread_cnt = nil
+      end
+
+      return render json: {
+        id: params[:id],
+        html: html,
+        tree: create_mail_tree(@mailbox, @mailboxes),
+        noread: noread_cnt
+      }
     end
     _show @item
   end
@@ -250,7 +276,7 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     
     subject = @item.subject.gsub(/[\/\<\>\|:;"\?\*\\\r\n]/, '_')
     subject = subject.match(/^.{100}/).to_s if subject.length > 100
-    subject = URI::escape(subject) if request.user_agent =~ /MSIE/
+    subject = URI::escape(subject) if Enisys.ie?(request.user_agent)
     filename = sprintf("%07d_%s.zip", @item.uid, subject)
     send_data(zipdata, :type => 'application/zip', :filename => filename, :disposition => 'attachment')
   end
@@ -423,6 +449,160 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     
     load_attachments(@ref, @item)
     
+    #@mailboxes  = load_mailboxes
+    render(:action => :new)
+  end
+
+  def gwcircular_forward
+    return false if no_email?
+    @form_action = "forward"
+    @ref = Gw::WebmailMail.find_by_uid(params[:id], :select => @mailbox.name, :conditions => @filter)
+    return http_error(404) unless @ref
+
+    @item = @ref
+
+    _url = Enisys::Config.application["gw.root_url"]
+    @forward_form_url = URI.join(_url, "/gwcircular/forward").to_s
+    @target_name = "gwcircular_form"
+
+    forward_setting
+  end
+
+  def gwbbs_forward
+    return false if no_email?
+    @form_action = "forward"
+    @ref = Gw::WebmailMail.find_by_uid(params[:id], :select => @mailbox.name, :conditions => @filter)
+    return http_error(404) unless @ref
+
+    @item = @ref
+
+    _url = Enisys::Config.application["gw.root_url"]
+    @forward_form_url = URI.join(_url, "/gwbbs/forward_select").to_s
+    @target_name = "gwbbs_form_select"
+
+    forward_setting
+  end
+
+  def forward_setting
+    #機能間転送の為の処理
+    #本文の処理
+    @mail_text_body = "-------- Original Message --------<br />"
+    #本文_件名
+    @mail_text_body << "タイトル: " + @item.subject + "<br />"
+    #本文_作成日時
+    @mail_text_body << "送信日時: " + @item.date + "<br />"
+    #本文_差出人アドレス
+    @mail_text_body << "送信者: " + @item.friendly_from_addr + "<br />"
+    #本文_宛先アドレス及びCCのアドレス
+    @mail_text_body << "宛先: " + @item.friendly_to_addrs.join('，') + "<br />"
+    @mail_text_body << "CC: " + @item.friendly_cc_addrs.join('，') + "<br />" if @item.friendly_cc_addrs.present?
+    #本文_メール本文
+    @mail_text_body << "----<br />"
+    @item.inline_contents.each_with_index do |inline, idx|
+      if inline.content_type == "text/plain" || inline.html_body.blank?
+        body = inline.text_body.split("\n")
+        body.each do |b|
+          @mail_text_body << "#{b}<br />"
+        end
+      else
+        @mail_text_body << "#{inline.html_body}"
+      end
+    end
+    @mail_text_body << "------ Original Message Ends ------<br />"
+    @mail_text_body = Base64.encode64(@mail_text_body).split().join()
+
+    @tmp = ""
+    @name = ""
+    @content_type = ""
+    @size = ""
+    @item.attachments.each do |at|
+      @tmp.concat "," if @tmp.present?
+      tmp = Zlib::Deflate.deflate(at.body, Zlib::BEST_COMPRESSION)
+      @tmp.concat Base64.encode64(tmp).split().join()
+      @name.concat "," if @name.present?
+      @name.concat at.name.to_s
+      @content_type.concat "," if @content_type.present?
+      @content_type.concat at.content_type.to_s
+      @size.concat "," if @size.present?
+      @size.concat at.size.to_s
+    end
+  end
+
+  def gw_forward
+    return false if no_email?
+    @form_action = "create"
+
+    @item = Gw::WebmailMail.new
+    @item.tmp_id  = Sys::File.new_tmp_id
+
+    load_address_from_flash
+
+    @item.in_to      = NKF::nkf('-w', params[:to]) if params[:to]
+    @item.in_cc      = NKF::nkf('-w', params[:cc]) if params[:cc]
+    @item.in_bcc     = NKF::nkf('-w', params[:bcc]) if params[:bcc]
+    @item.in_subject = NKF::nkf('-w', params[:subject]) if params[:subject]
+    if params[:body]
+      __body = Base64.decode64(params[:body]).to_s
+      if __body.include?("<")
+        @item.in_html_body = __body.force_encoding("utf-8")
+        @item.in_html_body << "\n\n#{@item.in_body}"
+        @item.in_format    = Gw::WebmailMail::FORMAT_HTML
+      else
+        @item.in_body = "#{NKF::nkf('-w', __body.force_encoding("utf-8"))}\n\n#{@item.in_body}"
+        @item.in_format    = Gw::WebmailMail::FORMAT_TEXT
+      end
+    end
+
+    if params[:tmp].present?
+      forward = params[:tmp].split(",")
+      name = params[:name].split(",")
+      size = params[:size].split(",")
+      cnt = 0
+      forward.each do |f|
+        total_size = size[cnt].to_i
+        cond = { :tmp_id => @item.tmp_id.to_s }
+        Gw::WebmailMailAttachment.find(:all, :conditions => cond).each {|c| total_size += c.size.to_i }
+
+        total_size_limit = Enisys::Config.application["webmail.attachment_file_max_size"].to_s + "MB" || "5 MB"
+        limit_value = total_size_limit.gsub(/(.*?)[^0-9].*/, '\\1').to_i * (1024**2)
+        mb = size[cnt].to_f / 1.megabyte.to_f
+        mb = (mb * 100).to_i
+        mb = sprintf('%g', mb.to_f / 100)
+        if total_size > limit_value
+          @error_messeage = "ファイルサイズが制限を超えているため、ファイルが添付できませんでした。【最大#{total_size_limit}の設定です。】【#{mb}MBのファイルを登録しようとしています。】"
+          next
+        end
+
+        file = Gw::WebmailMailAttachment.new(cond)
+
+        begin
+          at = Base64.decode64(f)
+          tmpfile = Sys::Lib::File::Tempfile.new({
+            :data     => Zlib::Inflate.inflate(at),
+            :filename => name[cnt]
+          })
+          rs = file.save_file(tmpfile)
+        rescue => e
+          flash[:notice] = "ファイルの保存に失敗しました。#{e}"
+          next
+        end
+        unless rs
+          raise file.errors.full_messages.join("\n")
+          next
+        end
+
+        unless FileTest.file?(file.upload_path)
+          flash[:notice] = "ファイルが存在しません。(#{file.upload_path})"
+          next
+        end
+
+        ## garbage collect
+        Sys::File.garbage_collect if rand(100) == 0
+
+        cnt = cnt + 1
+      end
+    end
+
     #@mailboxes  = load_mailboxes
     render(:action => :new)
   end
@@ -623,7 +803,7 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     
     mailbox_uids = get_mailbox_uids(@mailbox, @item.uid)
     mailbox_uids.each do |mailbox, uids|
-      num = Gw::WebmailMail.delete_all(mailbox, uids)
+      num = Gw::WebmailMail.delete_all(mailbox, uids, params[:real])
       if num > 0
         Gw::WebmailMailNode.delete_nodes(mailbox, uids)
         changed_mailbox_uids['Trash'] = [:all]
@@ -770,7 +950,7 @@ class Gw::Admin::Webmail::MailsController < Gw::Controller::Admin::Base
     
     mailbox_uids = get_mailbox_uids(@mailbox, uids)
     mailbox_uids.each do |mailbox, uids|
-      num = Gw::WebmailMail.delete_all(mailbox, uids)
+      num = Gw::WebmailMail.delete_all(mailbox, uids, params[:real])
       if num > 0
         Gw::WebmailMailNode.delete_nodes(mailbox, uids)
         changed_mailbox_uids['Trash'] = [:all]
@@ -1064,8 +1244,10 @@ protected
   def select_layout
     layout = "admin/gw/webmail"
     case params[:action].to_sym
-    when :new, :edit, :answer, :forward, :close, :create, :update, :resend
+    when :new, :edit, :answer, :forward, :gw_forward, :close, :create, :update, :resend
       layout = "admin/gw/mail_form"
+    when :gwcircular_forward, :gwbbs_forward
+      layout = "admin/gw/forward_form"
     when :show, :move
       unless params[:new_window].blank?
         layout = "admin/gw/mail_form"

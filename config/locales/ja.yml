@@ -118,6 +118,7 @@ ja:
         name: 編集
       destroy:
         name: 削除
+        confirm: 選択されたメールが削除されますが、よろしいですか？（削除されたメールを元に戻すことはできません。）
       create_mail:
         name: メール作成
       add_private_address:
@@ -234,6 +235,7 @@ ja:
         name: 制限なし
     new_mail:
       send:
+        confirm_no_subject: 件名が空欄です。このまま送信してよろしいですか？
         confirm: 送信します。よろしいですか？
         message: 送信中です
       draft:
@@ -252,3 +254,10 @@ ja:
       address:
         sys_address: 個人アドレス帳・共有アドレス帳項目設定
         sys_public_address_book_role: 共有アドレス帳管理権限
+    forward_message:
+      gwcircular_forward_message_1: 転送（メール→回覧板）処理中です。
+      gwcircular_forward_message_2: 添付ファイルがある場合、時間がかかることがあります。
+      gwcircular_forward_message_3: しばらくお待ちください。
+      gwbbs_forward_message_1: 転送（メール→掲示板）処理中です。
+      gwbbs_forward_message_2: 添付ファイルがある場合、時間がかかることがあります。
+      gwbbs_forward_message_3: しばらくお待ちください。

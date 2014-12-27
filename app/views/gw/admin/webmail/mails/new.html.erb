@@ -31,6 +31,7 @@ function clickSubmitButton(button) {
 }
 function showServerResponseError() {
   alert('サーバーの応答がありません。しばらく時間をおいて送信して下さい。');
+  UnfreezeScreen();
 }
 function showTokenError() {
   alert('ログイン状態がリセットされました。画面を閉じて再度ログインしてから送信して下さい。');
@@ -44,7 +45,11 @@ function getAuthenticityToken() {
 }
 function checkServerStatus(button) {
   if(button.name == 'commit_send'){
-    var res = confirm('<%= I18n.t('rumi.new_mail.send.confirm') %>');
+    if($('item_in_subject').value == ''){
+      var res = confirm('<%= I18n.t('rumi.new_mail.send.confirm_no_subject') %>');
+    } else {
+      var res = confirm('<%= I18n.t('rumi.new_mail.send.confirm') %>');
+    }
     if(res == true ){
       FreezeScreen('<%= I18n.t('rumi.new_mail.send.message') %>');
     } else {
@@ -91,19 +96,35 @@ function checkServerStatus(button) {
   });
 }
    function FreezeScreen(msg) {
-      scroll(0,0);
-      var outerPane = document.getElementById('FreezePane');
-      var innerPane = document.getElementById('InnerFreezePane');
-      if (outerPane) {
-        outerPane.className = 'FreezePaneOn';
-        var h = Math.max.apply( null, [document.body.clientHeight ,
-                                       document.body.scrollHeight,
-                                       document.documentElement.scrollHeight,
-                                       document.documentElement.clientHeight] )  + 'px';
-        outerPane.style.height = h;
-      }
-      if (innerPane) innerPane.innerHTML = msg;
+     $('commit_send1').disabled = true;
+     $('commit_draft1').disabled = true;
+     $('commit_destroy1').disabled = true;
+     $('commit_send2').disabled = true;
+     $('commit_draft2').disabled = true;
+     $('commit_destroy2').disabled = true;
+     scroll(0,0);
+     var outerPane = document.getElementById('FreezePane');
+     var innerPane = document.getElementById('InnerFreezePane');
+     if (outerPane) {
+       outerPane.className = 'FreezePaneOn';
+       var h = Math.max.apply( null, [document.body.clientHeight ,
+                                      document.body.scrollHeight,
+                                      document.documentElement.scrollHeight,
+                                      document.documentElement.clientHeight] )  + 'px';
+       outerPane.style.height = h;
+     }
+     if (innerPane) innerPane.innerHTML = msg;
    }
+
+function UnfreezeScreen() {
+  var op = jQuery("#FreezePane")
+  var ip = jQuery("#InnerFreezePane")
+  if (op) op.removeClass("FreezePaneOn").addClass("FreezePaneOff").height(0);
+  if (ip) ip.html("");
+  jQuery("input[type='button']").each(function () {
+    jQuery(this).removeAttr("disabled");
+  });
+}
 //]]>
 </script>
 <div id="FreezePane" class="FreezePaneOff">
@@ -117,6 +138,7 @@ function checkServerStatus(button) {
 <% end %>
 
 <div id="mailFormContainer">
+  <%= required(@error_messeage) %>
 <table id="webmailContainer"><tr><td id="webmailContent"><div id="mailContent" style="padding: 0px 10px;">
 
 <%= form_for(:item, :html => {:style => "display: none;"}) do |f| %>

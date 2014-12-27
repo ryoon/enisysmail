@@ -2,7 +2,8 @@
   <% if switch_account? %>
     <div class="switch_account"><%= I18n.t('rumi.account.message.switch') %></div>
   <% end %>
+  <%= hidden_field_tag(:before_account, Core.current_user.account) %>
   <%= form_tag url_for(:action => :index, :mailbox => 'INBOX'), :method => :get, :class => 'accounts' do %>
-    <%= select_tag :current_account, options_for_select(Core.switch_users.map{|u| [u.email, u.account]}, Core.current_user.account), :class => 'account', :onchange => 'this.form.submit();' %>
+    <%= select_tag :current_account, options_for_select(Core.switch_users.map{|u| [u.email, u.account]}, Core.current_user.account), :class => 'account', :onchange => 'return change_user(this.form);' %>
   <% end %>
 <% end %>
